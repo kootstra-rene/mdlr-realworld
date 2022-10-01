@@ -16,9 +16,11 @@ mdlr('[html]realworld-pages', m => {
           <div class="col-md-9">
             <div class="feed-toggle">
               <ul class="nav nav-pills outline-active">
+                {#if !!user}
                 <li class="nav-item">
                   <a class="nav-link disabled" href="">Your Feed</a>
                 </li>
+                {/if}
                 <li class="nav-item">
                   <a class="nav-link active" href="">Global Feed</a>
                 </li>
@@ -84,5 +86,8 @@ mdlr('[html]realworld-pages', m => {
       </div>
 
     </div>`;
-    
+
+    return class {
+      user = JSON.parse(localStorage.getItem('user') || '{}').user;
+    }
 })

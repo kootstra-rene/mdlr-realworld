@@ -10,23 +10,35 @@ mdlr('[html]realworld-header', m => {
         <li class="nav-item">
           <a class="nav-link active" href="#/">Home</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#/editor">
-            <i class="ion-compose"></i>New Article
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#/settings">
-            <i class="ion-gear-a"></i>Settings
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#/login">Sign in</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#/register">Sign up</a>
-        </li>
+
+        {#if !user}
+          <li class="nav-item">
+            <a class="nav-link" href="#/login">Sign in</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#/register">Sign up</a>
+          </li>
+        {:else}
+          <li class="nav-item">
+            <a class="nav-link" href="#/editor">
+              <i class="ion-compose"></i>New Article
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#/settings">
+              <i class="ion-gear-a"></i>Settings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"><img class="user-pic" src={user.image}>{user.username}</a>
+          </li>
+        {/if}
       </ul>
     </div>
     </nav>`;
+
+  return class {
+    user = JSON.parse(localStorage.getItem('user') || '{}').user;
+  }
+
 })

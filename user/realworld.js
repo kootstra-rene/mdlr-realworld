@@ -13,8 +13,10 @@ mdlr('[html]realworld', m => {
     <m-realworld-header />
     {#if hash === '#/'}
       <m-realworld-pages />
-    {:elseif hash === '#/login' || hash === '#/register'}
-      <m-realworld-login />
+    {:elseif hash === '#/login'}
+      <m-realworld-login mode="{'in'}" />
+    {:elseif hash === '#/register'}
+      <m-realworld-login mode="{'up'}"/>
     {:elseif hash === '#/settings'}
       <m-realworld-settings />
     {:elseif hash === '#/editor'}
