@@ -43,7 +43,7 @@ mdlr('[html]realworld-settings', m => {
     </div>`;
 
   return class {
-    user = JSON.parse(localStorage.getItem('user') || '{}').user;
+    user = null;
 
     logout() {
       localStorage.setItem('user', '{}');

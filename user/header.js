@@ -38,7 +38,7 @@ mdlr('[html]realworld-header', m => {
     </nav>`;
 
   return class {
-    user = JSON.parse(localStorage.getItem('user') || '{}').user;
+    user = null;
   }
 
 })

@@ -27,41 +27,32 @@ mdlr('[html]realworld-pages', m => {
               </ul>
             </div>
 
+            {#each article in globalArticles}
             <div class="article-preview">
               <div class="article-meta">
-                <a href="#/profile"><img src="https://i.imgur.com/Qr71crq.jpg" /></a>
+                <a href="#/profile"><img src="{article.author.image}" /></a>
                 <div class="info">
-                  <a href="" class="author">Eric Simons</a>
+                  <a href="" class="author">{article.author.username}</a>
                   <span class="date">January 20th</span>
                 </div>
                 <button class="btn btn-outline-primary btn-sm pull-xs-right">
-                  <i class="ion-heart"></i> 29
+                  <i class="ion-heart"></i>{article.favoritesCount}
                 </button>
               </div>
               <a href="#/article" class="preview-link">
-                <h1>How to build webapps that scale</h1>
-                <p>This is the description for the post.</p>
+                <h1>{article.title}</h1>
+                <p>{article.description}</p>
                 <span>Read more...</span>
+                <ul class="tag-list">
+                  {#each tag in article.tagList}
+                  <li class="tag-default tag-pill tag-outline">{tag}</li>
+                  {/each}
+                </ul>
               </a>
             </div>
-
-            <div class="article-preview">
-              <div class="article-meta">
-                <a href="#/profile"><img src="https://i.imgur.com/N4VcUeJ.jpg" /></a>
-                <div class="info">
-                  <a href="" class="author">Albert Pai</a>
-                  <span class="date">January 20th</span>
-                </div>
-                <button class="btn btn-outline-primary btn-sm pull-xs-right">
-                  <i class="ion-heart"></i> 32
-                </button>
-              </div>
-              <a href="#/article" class="preview-link">
-                <h1>The song you won't ever stop singing. No matter how hard you try.</h1>
-                <p>This is the description for the post.</p>
-                <span>Read more...</span>
-              </a>
-            </div>
+            {:else}
+            <div class="article-preview">loading articles...</div>
+            {/each}
 
           </div>
 
@@ -70,14 +61,11 @@ mdlr('[html]realworld-pages', m => {
               <p>Popular Tags</p>
 
               <div class="tag-list">
-                <a href="" class="tag-pill tag-default">programming</a>
-                <a href="" class="tag-pill tag-default">javascript</a>
-                <a href="" class="tag-pill tag-default">emberjs</a>
-                <a href="" class="tag-pill tag-default">angularjs</a>
-                <a href="" class="tag-pill tag-default">react</a>
-                <a href="" class="tag-pill tag-default">mean</a>
-                <a href="" class="tag-pill tag-default">node</a>
-                <a href="" class="tag-pill tag-default">rails</a>
+              {#each tag in tags}
+                <a href="" class="tag-pill tag-default">{tag}</a>
+              {:else}
+                <span>loading tags...</span>
+              {/each}
               </div>
             </div>
           </div>
@@ -88,6 +76,20 @@ mdlr('[html]realworld-pages', m => {
     </div>`;
 
     return class {
-      user = JSON.parse(localStorage.getItem('user') || '{}').user;
+      api = null;
+      user = null;
+      globalArticles = [];
+      tags = [];
+
+      async connected() {
+        // todo: article section to seperate component to reduce render time (only redraw articles i.s.o this compleet component)
+        this.globalArticles = await this.api.getGlobalFeed();
+        // todo: tags section to seperate component to reduce render time (only redraw tags i.s.o this compleet component)
+        this.tags = await this.api.getTags();
+
+        // remark: putting the sections in each component will also solve the blocked chain without promise.all (foreach can solve this to but less clean code)
+
+        m.redraw(this);
+      }
     }
 })

@@ -44,21 +44,16 @@ mdlr('[html]realworld-login', m => {
     </div>`;
 
   return class {
+    api = null;
     mode = '';
 
     async click(e) {
       const email = this.email.value;
       const password = this.password.value;
 
-      const result = await fetch(`https://api.realworld.io/api/users/login`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ user: { email, password } })
-      }).then(r => r.json());
+      const result = await this.api.login(email, password);
 
-      localStorage.setItem('user', JSON.stringify(result));
+      localStorage.setItem('user', JSON.stringify(result)); // Q: whos responsibility is this?
 
       const {hash, href} = window.location;
       window.location.href = href.replace(hash, '#/');

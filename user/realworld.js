@@ -9,16 +9,18 @@ mdlr('[html]realworld', m => {
   m.require('[html]realworld-article-create');
   m.require('[html]realworld-profile');
 
+  const api = m.require('api:realworld');
+
   m.html`
-    <m-realworld-header />
+    <m-realworld-header user={user} />
     {#if hash === '#/'}
-      <m-realworld-pages />
+      <m-realworld-pages api={api} user={user} />
     {:elseif hash === '#/login'}
-      <m-realworld-login mode="{'in'}" />
+      <m-realworld-login api={api} mode="{'in'}" />
     {:elseif hash === '#/register'}
       <m-realworld-login mode="{'up'}"/>
     {:elseif hash === '#/settings'}
-      <m-realworld-settings />
+      <m-realworld-settings user={user} />
     {:elseif hash === '#/editor'}
       <m-realworld-article-create />
     {:elseif hash === '#/article'}
@@ -40,10 +42,14 @@ mdlr('[html]realworld', m => {
 
   return class {
     hash = '#/';
+    user = null;
 
     constructor() {
+     this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
+
       const url = new URL(window.location.href);
       this.hash = url.hash;
+      this.api = api;
     }
 
     connected() {
