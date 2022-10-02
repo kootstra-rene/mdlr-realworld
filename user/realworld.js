@@ -2,7 +2,7 @@ mdlr('[html]realworld', m => {
 
   m.require('[html]realworld-header');
   m.require('[html]realworld-footer');
-  m.require('[html]realworld-pages');
+  m.require('[html]realworld-main');
   m.require('[html]realworld-login');
   m.require('[html]realworld-settings');
   m.require('[html]realworld-article');
@@ -14,7 +14,7 @@ mdlr('[html]realworld', m => {
   m.html`
     <m-realworld-header user={user} />
     {#if hash === '#/'}
-      <m-realworld-pages api={api} user={user} />
+      <m-realworld-main api={api} user={user} options={options} />
     {:elseif hash === '#/login'}
       <m-realworld-login api={api} mode="{'in'}" />
     {:elseif hash === '#/register'}
@@ -24,7 +24,7 @@ mdlr('[html]realworld', m => {
     {:elseif hash === '#/editor'}
       <m-realworld-article-create />
     {:elseif hash === '#/article'}
-      <m-realworld-article />
+      <m-realworld-article api={api} user={user} options={options} />
     {:elseif hash === '#/profile'}
       <m-realworld-profile />
     {/if}
@@ -43,26 +43,39 @@ mdlr('[html]realworld', m => {
   return class {
     hash = '#/';
     user = null;
+    options = {};
 
     constructor() {
       this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
 
-      const url = new URL(window.location.href);
-      this.hash = url.hash;
+      this.route(window.location.href);
       this.api = api;
     }
 
     connected() {
       // primitive router
       window.addEventListener('hashchange', e => {
-        // todo: put user info in seperator module
+        // todo: put user info in seperate module
         this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
 
-        const url = new URL(e.newURL);
-        this.hash = url.hash;
-
+        this.route(e.newURL);
         m.redraw(this);
       });
+    }
+
+    route(newURL) {
+      const url = new URL(newURL);
+      const [hash, search] = url.hash.split('?');
+      console.log(search)
+
+      const options = new URLSearchParams(search);
+      this.options = [...options].reduce((a, [key, value]) => {
+        a[key] = value;
+        return a;
+      }, {});
+
+      console.log(this.options);
+      this.hash = hash;
     }
   }
 
