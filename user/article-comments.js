@@ -3,6 +3,7 @@ mdlr('[html]realworld-article-comments', m => {
   m.html`
     <div class="col-xs-12 col-md-8 offset-md-2">
 
+      {#if !!user}
       <form class="card comment-form">
         <div class="card-block">
           <textarea class="form-control" placeholder="Write a comment..." rows="3"></textarea>
@@ -14,6 +15,7 @@ mdlr('[html]realworld-article-comments', m => {
           </button>
         </div>
       </form>
+      {/if}
 
       {#each comment in comments}
       <div class="card">
