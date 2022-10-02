@@ -76,6 +76,12 @@ mdlr('[html]realworld-article', m => {
 
     </div>`;
 
+  m.css`
+    button + button {
+      margin-left: 0.4em;
+    }
+  `;
+
   return class {
     api = null;
     user = null;
@@ -88,6 +94,8 @@ mdlr('[html]realworld-article', m => {
 
       m.redraw(this);
     }
+
+    // todo: should these be part of the article dao?
 
     get favorited() {
       return !this.article?.favorited ? 'Favorite' : 'Unfavorite';
