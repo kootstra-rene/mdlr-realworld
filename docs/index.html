@@ -1,1 +1,1241 @@
-hello realworld
+<!DOCTYPE html><html lang="en"><head><style>:where(body){all: unset;margin:0;overflow:hidden;}</style></head><body><script type="text/javascript">'use strict';
+globalThis.mdlr = (() => {
+
+  const m = {
+    names: /^(?:\[(?<t>[a-z]+)\])?(?<n>[-:a-z0-9]+)$/,
+    modules: new Map,
+    loader: new Map,
+    checks: new Set,
+
+    info: (name, type = 'unit') => {
+      const [ , t, n ] = m.names.exec(name) ?? [];
+      return { type:t??type, n:`[${t??type}]${n}` };
+    },
+
+    load: (info, context) => {
+      return m.loader.get(info.type)(info, context);
+    }
+  }
+
+  m.loader
+    .set('unit', (info, context) => {
+      const scope = new Modular(info, context);
+      const unit = m.modules.get(info.n)(scope);
+      // todo: move this check to static analisys
+      if (undefined !== unit && '[object Object]' !== Object.prototype.toString.call(unit)) {
+        if (!m.checks.has(info.n)) {
+          console.error(info, 'should return an object');
+          m.checks.add(info.n);
+        }
+      }
+      return unit;
+    })
+    .set('mdlr', m.loader.get('unit'))
+    .set('node', info => require(info.n.replace('[node]', '')));
+
+  class Modular {
+    constructor(info, context) {
+      this.context = context ?? {};
+      this.name = info.n;
+      if (info.type === 'mdlr') {
+        this.$ = k => m[k];
+      }
+    }
+
+    require(name, context) {
+      if (this.context[name]) {
+        return this.context[name];
+      }
+
+      const info = m.info(name);
+      return m.load(info, context);
+    }
+  }
+
+  return (name, context) => {
+    const info = m.info(name);
+
+    if (context && context.constructor === Function) {
+      m.modules.set(info.n, context);
+    }
+    else {
+      return m.load(info, context);
+    }
+  }
+
+})()
+mdlr('[html]realworld', m => {
+
+  m.require('[html]realworld-header');
+  m.require('[html]realworld-footer');
+  m.require('[html]realworld-main');
+  m.require('[html]realworld-login');
+  m.require('[html]realworld-settings');
+  m.require('[html]realworld-article');
+  m.require('[html]realworld-article-create');
+  m.require('[html]realworld-profile');
+
+  const api = m.require('api:realworld');
+
+  m.html`
+    <m-realworld-header user={user} />
+    {#if hash === '#/'}
+      <m-realworld-main api={api} user={user} options={options} />
+    {:elseif hash === '#/login'}
+      <m-realworld-login api={api} mode="{'in'}" />
+    {:elseif hash === '#/register'}
+      <m-realworld-login mode="{'up'}"/>
+    {:elseif hash === '#/settings'}
+      <m-realworld-settings user={user} />
+    {:elseif hash === '#/editor'}
+      <m-realworld-article-create />
+    {:elseif hash === '#/article'}
+      <m-realworld-article api={api} user={user} options={options} />
+    {:elseif hash === '#/profile'}
+      <m-realworld-profile />
+    {/if}
+    <m-realworld-footer />`;
+
+  document.head.innerHTML += `
+    <meta charset="utf-8">
+    <title>Conduit</title>
+    <!-- Import Ionicon icons & Google Fonts our Bootstrap theme relies on -->
+    <link href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Titillium+Web:700|Source+Serif+Pro:400,700|Merriweather+Sans:400,700|Source+Sans+Pro:400,300,600,700,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
+    <!-- Import the custom Bootstrap 4 theme from our hosted CDN -->
+    <link rel="stylesheet" href="//demo.productionready.io/main.css">
+  `;
+
+  return class {
+    hash = '#/';
+    user = null;
+    options = {};
+
+    constructor() {
+      this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
+
+      this.route(window.location.href);
+      this.api = api;
+    }
+
+    connected() {
+      // primitive router
+      window.addEventListener('hashchange', e => {
+        // todo: put user info in seperate module
+        this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
+
+        this.route(e.newURL);
+        m.redraw(this);
+      });
+    }
+
+    route(newURL) {
+      const url = new URL(newURL);
+      const [hash, search] = url.hash.split('?');
+      console.log(search)
+
+      const options = new URLSearchParams(search);
+      this.options = [...options].reduce((a, [key, value]) => {
+        a[key] = value;
+        return a;
+      }, {});
+
+      console.log(this.options);
+      this.hash = hash;
+    }
+  }
+
+})
+mdlr('[html]realworld-header', m => {
+
+  m.html`
+    <nav class="navbar navbar-light">
+    <div class="container">
+      <a class="navbar-brand" href="#/">conduit</a>
+      <ul class="nav navbar-nav pull-xs-right">
+        <li class="nav-item">
+          <a class="nav-link active" href="#/">Home</a>
+        </li>
+
+        {#if !user}
+          <li class="nav-item">
+            <a class="nav-link" href="#/login">Sign in</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#/register">Sign up</a>
+          </li>
+        {:else}
+          <li class="nav-item">
+            <a class="nav-link" href="#/editor">
+              <i class="ion-compose"></i>New Article
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#/settings">
+              <i class="ion-gear-a"></i>Settings
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"><img class="user-pic" src={user.image}>{user.username}</a>
+          </li>
+        {/if}
+      </ul>
+    </div>
+    </nav>`;
+
+  return class {
+    user = null;
+  }
+
+})
+mdlr('[html]realworld-footer', m => {
+
+  m.html`
+  <footer>
+    <div class="container">
+      <a href="#/" class="logo-font">conduit</a>
+      <span class="attribution">
+        An interactive learning project from <a href="https://thinkster.io">Thinkster</a>. Code & design licensed under MIT.
+      </span>
+    </div>
+  </footer>`;
+
+})
+mdlr('[html]realworld-main', m => {
+
+  m.require('[html]realworld-main-articles');
+  m.require('[html]realworld-main-tags');
+
+  m.html`
+    <div class="home-page">
+
+      <div class="banner">
+        <div class="container">
+          <h1 class="logo-font">conduit</h1>
+          <p>A place to share your knowledge.</p>
+        </div>
+      </div>
+
+      <div class="container page">
+        <div class="row">
+
+          <div class="col-md-9">
+            <div class="feed-toggle">
+              <ul class="nav nav-pills outline-active">
+                {#if !!user}
+                <li class="nav-item">
+                  <a class="nav-link disabled" href="#/?feed=user">Your Feed</a>
+                </li>
+                {/if}
+                <li class="nav-item">
+                  <a class="nav-link active" href="#/?feed=global">Global Feed</a>
+                </li>
+              </ul>
+            </div>
+
+            <m-realworld-main-articles api={api} user={user} feed={options.feed} />
+
+          </div>
+
+          <div class="col-md-3">
+            <m-realworld-main-tags api={api} />
+          </div>
+
+        </div>
+      </div>
+
+    </div>`;
+
+    return class {
+      api = null;
+      user = null;
+      options = {};
+    }
+})
+mdlr('[html]realworld-login', m => {
+
+  m.html`
+    <div class="auth-page">
+      <div class="container page">
+        <div class="row">
+
+          <div class="col-md-6 offset-md-3 col-xs-12">
+            <h1 class="text-xs-center">Sign {mode}</h1>
+
+            {#if mode === 'up'}
+            <p class="text-xs-center">
+              <a href="#/login">Have an account?</a>
+            </p>
+
+            <ul class="error-messages">
+              <li>That email is already taken</li>
+            </ul>
+            {/if}
+
+            <form method="dialog">
+              {#if mode === 'up'}
+              <fieldset class="form-group">
+                <input class="form-control form-control-lg" type="text" placeholder="Your Name">
+              </fieldset>
+              {/if}
+
+              <fieldset class="form-group">
+                <input{email} class="form-control form-control-lg" type="text" placeholder="Email">
+              </fieldset>
+
+              <fieldset class="form-group">
+                <input{password} class="form-control form-control-lg" type="password" placeholder="Password">
+              </fieldset>
+
+              <button class="btn btn-lg btn-primary pull-xs-right" on={click}>
+                Sign {mode}
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>`;
+
+  return class {
+    api = null;
+    mode = '';
+
+    async click(e) {
+      const email = this.email.value;
+      const password = this.password.value;
+
+      const result = await this.api.login(email, password);
+
+      localStorage.setItem('user', JSON.stringify(result)); // Q: whos responsibility is this?
+
+      const {hash, href} = window.location;
+      window.location.href = href.replace(hash, '#/');
+
+      //m.redirect('#/'); // todo: this would be awesome
+    }
+  };
+
+})
+mdlr('[html]realworld-settings', m => {
+
+  m.html`
+    <div class="settings-page">
+      <div class="container page">
+        <div class="row">
+
+          <div class="col-md-6 offset-md-3 col-xs-12">
+            <h1 class="text-xs-center">Your Settings</h1>
+
+            <form method="dialog">
+              <fieldset>
+                <fieldset class="form-group">
+                  <input class="form-control" type="text" placeholder="URL of profile picture" value={user.image}>
+                </fieldset>
+                <fieldset class="form-group">
+                  <input class="form-control form-control-lg" type="text" placeholder="Your Name" value={user.username}>
+                </fieldset>
+                <fieldset class="form-group">
+                  <textarea class="form-control form-control-lg" rows="8" placeholder="Short bio about you">{user.bio || ''}</textarea>
+                </fieldset>
+                <fieldset class="form-group">
+                  <input class="form-control form-control-lg" type="text" placeholder="Email" value={user.email}>
+                </fieldset>
+                <fieldset class="form-group">
+                  <input class="form-control form-control-lg" type="password" placeholder="Password">
+                </fieldset>
+                <button class="btn btn-lg btn-primary pull-xs-right">
+                  Update Settings
+                </button>
+              </fieldset>
+            </form>
+            {#if !!user}
+            <hr>
+            <button class="btn btn-outline-danger" on={click:logout}>
+              Or click here to logout.
+            </button>
+            {/if}
+          </div>
+
+        </div>
+      </div>
+    </div>`;
+
+  return class {
+    user = null;
+
+    logout() {
+      localStorage.setItem('user', '{}');
+
+      const {hash, href} = window.location;
+      window.location.href = href.replace(hash, '#/');
+
+      //m.redirect('#/'); // todo: this would be awesome
+    }
+  }
+})
+mdlr('[html]realworld-article', m => {
+
+  m.require('[html]realworld-article-comments');
+
+  m.html`
+    <div class="article-page">
+
+      <div class="banner">
+        <div class="container">
+
+        {#if article}
+          <h1>{article.title}</h1>
+
+          <div class="article-meta">
+            <a href="#/profile"><img src="{article.author.image}" /></a>
+            <div class="info">
+              <a href="" class="author">{article.author.username}</a>
+              <span class="date">January 20th</span>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary">
+              <i class="ion-plus-round"></i>
+              Follow {article.author.username} <span class="counter">(10)</span>
+            </button>
+            <button class="btn btn-sm btn-outline-primary">
+              <i class="ion-heart"></i>
+              Favorite Post <span class="counter">(29)</span>
+            </button>
+          </div>
+        {:else}
+          <h1>...</h1>
+        {/if}
+        </div>
+      </div>
+
+      <div class="container page">
+
+        {#if article}
+        <div class="row article-content">
+          <div class="col-md-12">
+            <p>{article.body}</p>
+            <ul class="tag-list">
+            {#each tag in article.tagList}
+              <li class="tag-default tag-pill tag-outline">{tag}</li>
+            {/each}
+            </ul>
+          </div>
+        </div>
+        {:else}
+        <div>loading article...</div>
+        {/if}
+  
+        <hr />
+
+        {#if article}
+        <div class="article-actions">
+          <div class="article-meta">
+            <a href="#/profile"><img src="{article.author.image}" /></a>
+            <div class="info">
+              <a href="" class="author">{article.author.username}</a>
+              <span class="date">January 20th</span>
+            </div>
+
+            <button class="btn btn-sm btn-outline-secondary">
+              <i class="ion-plus-round"></i>
+              Follow {article.author.username}
+            </button>
+            <button class="btn btn-sm btn-outline-primary">
+              <i class="ion-heart"></i>
+              Favorite Post <span class="counter">(29)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="row">
+          <m-realworld-article-comments api={api} user={user} options={options} />
+        </div>
+        {/if}
+
+      </div>
+
+    </div>`;
+
+  return class {
+    api = null;
+    user = null;
+    options = null;
+
+    article = null;
+
+    async connected() {
+      this.article = await this.api.getArticle(this.options.slug);
+      console.log(this.article);
+      m.redraw(this);
+    }
+  }
+
+})
+mdlr('[html]realworld-article-create', m => {
+
+  m.html`
+    <div class="editor-page">
+      <div class="container page">
+        <div class="row">
+
+          <div class="col-md-10 offset-md-1 col-xs-12">
+            <form>
+              <fieldset>
+                <fieldset class="form-group">
+                  <input type="text" class="form-control form-control-lg" placeholder="Article Title">
+                </fieldset>
+                <fieldset class="form-group">
+                  <input type="text" class="form-control" placeholder="What's this article about?">
+                </fieldset>
+                <fieldset class="form-group">
+                  <textarea class="form-control" rows="8"
+                    placeholder="Write your article (in markdown)"></textarea>
+                </fieldset>
+                <fieldset class="form-group">
+                  <input type="text" class="form-control" placeholder="Enter tags">
+                    <div class="tag-list"></div>
+                </fieldset>
+                <button class="btn btn-lg pull-xs-right btn-primary" type="button">
+                  Publish Article
+                </button>
+              </fieldset>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>`
+
+})
+mdlr('[html]realworld-profile', m => {
+
+  m.html`
+    <div class="profile-page">
+
+    <div class="user-info">
+      <div class="container">
+        <div class="row">
+
+          <div class="col-xs-12 col-md-10 offset-md-1">
+            <img src="https://i.imgur.com/Qr71crq.jpg" class="user-img" />
+            <h4>Eric Simons</h4>
+            <p>
+              Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the
+              Hunger Games
+            </p>
+            <button class="btn btn-sm btn-outline-secondary action-btn">
+              <i class="ion-plus-round"></i>
+              Follow Eric Simons
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+
+        <div class="col-xs-12 col-md-10 offset-md-1">
+          <div class="articles-toggle">
+            <ul class="nav nav-pills outline-active">
+              <li class="nav-item">
+                <a class="nav-link active" href="">My Articles</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="">Favorited Articles</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="article-preview">
+            <div class="article-meta">
+              <a href=""><img src="https://i.imgur.com/Qr71crq.jpg" /></a>
+              <div class="info">
+                <a href="" class="author">Eric Simons</a>
+                <span class="date">January 20th</span>
+              </div>
+              <button class="btn btn-outline-primary btn-sm pull-xs-right">
+                <i class="ion-heart"></i> 29
+              </button>
+            </div>
+            <a href="" class="preview-link">
+              <h1>How to build webapps that scale</h1>
+              <p>This is the description for the post.</p>
+              <span>Read more...</span>
+            </a>
+          </div>
+
+          <div class="article-preview">
+            <div class="article-meta">
+              <a href=""><img src="https://i.imgur.com/N4VcUeJ.jpg" /></a>
+              <div class="info">
+                <a href="" class="author">Albert Pai</a>
+                <span class="date">January 20th</span>
+              </div>
+              <button class="btn btn-outline-primary btn-sm pull-xs-right">
+                <i class="ion-heart"></i> 32
+              </button>
+            </div>
+            <a href="" class="preview-link">
+              <h1>The song you won't ever stop singing. No matter how hard you try.</h1>
+              <p>This is the description for the post.</p>
+              <span>Read more...</span>
+              <ul class="tag-list">
+                <li class="tag-default tag-pill tag-outline">Music</li>
+                <li class="tag-default tag-pill tag-outline">Song</li>
+              </ul>
+            </a>
+          </div>
+
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>`;
+
+})
+mdlr('[unit]api:realworld', m => {
+
+  return {
+
+    login: async (email, password) => {
+      const result = await fetch(`https://api.realworld.io/api/users/login`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user: { email, password } })
+      }).then(r => r.json());
+
+      return result; // todo: change to result.user
+    },
+
+    getGlobalFeed: async () => {
+      const result = await fetch(`https://api.realworld.io/api/articles?limit=10&offset=0`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(r => r.json());
+
+      return result.articles;
+    },
+
+    getUserFeed: async (user) => {
+      const result = await fetch(`https://api.realworld.io/api/articles/feed?limit=10&offset=0`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': `Token ${user.token}`
+        }
+      }).then(r => r.json());
+
+      return result.articles;
+    },
+
+    getArticle: async (slug) => {
+      const result = await fetch(`https://api.realworld.io/api/articles/${slug}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(r => r.json());
+
+      return result.article;
+    },
+
+    getArticleComments: async (slug) => {
+      const result = await fetch(`https://api.realworld.io/api/articles/${slug}/comments`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(r => r.json());
+
+      return result.comments;
+    },
+
+    getTags: async () => {
+      const result = await fetch(`https://api.realworld.io/api/tags`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(r => r.json());
+
+      return result.tags;
+    },
+
+  };
+
+})
+mdlr('[mdlr]html-loader', m => {
+
+  const { tokenizer, types: { CLOSE, OPEN, TEXT, HINT } } = m.require('html-tokenizer');
+  const { ObjectTree } = m.require('object-tree');
+
+  const builders = new Map;
+
+  function compileChildren(keys, objectTree, state, level) {
+    if (!objectTree.list?.length) return '';
+    const indent = '  '.repeat(level);
+    let body = '';
+
+    objectTree.list.forEach(child => {
+      const value = child.node.value;
+      const node = child.node;
+
+      switch (node.type) {
+        case '#fragment':
+          return console.log(`unsupported: ${node.type}`);
+        case '#if':
+          body += `${indent}if (${value.condition}) {\n`;
+          body += `${indent}  var n${level} = document.createDocumentFragment();\n`;
+          body += compileChildren(keys, child, state, level + 1);
+          body += `${indent}  n${level - 1}.appendChild(n${level});\n`;
+          body += `${indent}}\n`;
+          break;
+        case ':elseif':
+          body += `${indent}else if (${value.condition}) {\n`;
+          body += `${indent}  var n${level} = document.createDocumentFragment();\n`;
+          body += compileChildren(keys, child, state, level + 1);
+          body += `${indent}  n${level - 1}.appendChild(n${level});\n`;
+          body += `${indent}}\n`;
+          break;
+        case '#each':
+          body += `${indent}if (${value.member}?.length) {\n`;
+          body += `${indent}  var n${level} = document.createDocumentFragment();\n`;
+          body += `${indent}  ${value.member}?.forEach((${value.item}) => {\n`;
+          body += compileChildren(keys, child, state, level + 1);
+          body += `${indent}  });\n`;
+          body += `${indent}  n${level - 1}.appendChild(n${level});\n`;
+          body += `${indent}}\n`;
+          break;
+        case ':else':
+          body += `${indent}else {\n`;
+          body += `${indent}  var n${level} = document.createDocumentFragment();\n`;
+          body += compileChildren(keys, child, state, level + 1);
+          body += `${indent}  n${level - 1}.appendChild(n${level});\n`;
+          body += `${indent}}\n`;
+          break;
+        case '#text':
+          const template = getSections(child.node.raw, keys);
+          body += `${indent}var n${level} = document.createTextNode(\`${template.text}\`);\n`;
+          if (template.vars) {
+            const vars = getTemplatedVariables(child.node.raw);
+            body += `${indent}customElement.registerNode(n${level}, ${JSON.stringify(vars)}, {${vars.join(', ')}}, \`${template.text.replace(/\$/g, '\\$')}\`);\n`;
+          }
+          body += `${indent}n${level - 1}.appendChild(n${level});\n`;
+          break;
+        default: {
+          body += `${indent}var n${level} = document.createElementNS('${node.xmlns}', \`${node.type}\`);\n`;
+          if (child.node.key) {
+            body += `${indent}state.${node.key} = (n${level}.state) ? n${level}.state : n${level};\n`;
+          }
+
+          const isHtmlModule = builders.has(node.type);
+          node.attributes.forEach(e => {
+            if (isHtmlModule) {
+              const regex = /^\{(?<code>[^}]+)\}$/;
+              body += `${indent}n${level}.state.${e.key} = ${regex.exec(e.raw).groups.code};\n`;
+              return;
+            }
+
+            const template = getSections(e.raw, keys, e.key);
+            body += `${indent}n${level}.setAttribute('${e.key}', \`${template.text}\`);\n`;
+            if (template.vars) {
+              const vars = getTemplatedVariables(e.raw);
+              body += `${indent}customElement.registerNodeAttribute(n${level}, ${JSON.stringify(vars)}, {${vars.join(', ')}}, '${e.key}', \`${template.text.replace(/\$/g, '\\$')}\`);\n`;
+            }
+          })
+          body += compileChildren(keys, child, state, level + 1);
+          if (node.events?.length) {
+            node.events.forEach(e => {
+              body += `${indent}  n${level}.addEventListener(\`${e.id}\`, e => { state[\`${e.method}\`](e); state.$renew(); });\n`;
+            })
+          }
+          body += `${indent}n${level - 1}.appendChild(n${level});\n`;
+        } break;
+      }
+    });
+    return body;
+  }
+
+  function matchAll(text, regex) {
+    return [...text.matchAll(regex)].filter(a => a[0]).map(a => a.groups);
+  }
+
+  function getVars(text, keys) {
+    const regex = /(?<name>[a-zA-Z][a-zA-Z0-9\.]*)|(?<fixed>[^a-zA-Z]*)/g;
+    return matchAll(text, regex).map(a => {
+      if (!a.name) return a;
+      a.fixed = keys.has(a.name.split('.')[0]) ? `state.${a.name}` : a.name;
+      return a;
+    }).reduce((a, b) => {
+      return a + b.fixed;
+    }, '$');
+  }
+
+  function getSections(text, keys, attr) {
+    const regex = /(?<hint>{[^}]*})|(?<text>[^{]*)/g;
+    return matchAll(text, regex).map(a => {
+      if (a.hint === undefined) return a;
+      a.text = getVars(a.hint, keys);
+      if (attr && a.text === '${}') a.text = `\${${attr}}`;
+      return a;
+    }).reduce((a, b) => {
+      if (b.hint) a.vars = true;
+      a.text += b.text;
+      return a;
+    }, { vars: false, text: '' });
+  }
+
+  function update(keys) {
+    keys.forEach(key => {
+      const nodes = this.updateMap.get(key);
+      if (!nodes || !nodes.length) return;
+
+      nodes.forEach(n => {
+        const value = n.converter(this.state, n.state || {});
+        if (n.attr) {
+          if (n.node.getAttribute(n.attr) !== value) n.node.setAttribute(n.attr, value);
+        }
+        else {
+          if (n.textContent !== value) n.node.textContent = value;
+        }
+      });
+    })
+  }
+
+  function compile(objectTree, customElement) {
+    const state = customElement.state;
+    const keys = customElement.keys;
+    const funcName = objectTree.node.name.replace(/-/g, '_');
+    let body = '';
+    body += `return function ${funcName}(customElement, state) {\n`;
+    body += `  const {${[...customElement.keys].join(', ')}} = state;\n`;
+    body += `  customElement.resetCache();\n`;
+    body += '  var n0 = document.createDocumentFragment();\n';
+    body += compileChildren(keys, objectTree, state, 1);
+    body += '  return n0;\n';
+    body += '}';
+
+    return {
+      create: new Function('customElement', body)(customElement),
+    }
+  }
+
+  function defineElement(name, options) {
+    const stateBuilder = builders.get(name) || class { };
+
+    const tempState = stateBuilder ? new stateBuilder : {};
+    const stateKeys = [...Object.getOwnPropertyNames(stateBuilder.prototype), ...Object.getOwnPropertyNames(tempState)].filter(a => a !== 'constructor');
+
+    const code = compile(options.tree, {state: tempState, keys: new Set(stateKeys)});
+    console.log(code);
+
+    customElements.define(name, class extends HTMLElement {
+      constructor() {
+        super();
+
+        this.state = stateBuilder ? new stateBuilder : {};
+        this.updateMap = new Map;
+      }
+
+      connectedCallback() {
+        this.textContent = ''; // fast removal of children
+        this.appendChild(code.create(this, this.state));
+
+        this.state.$renew = update.bind(this, stateKeys);
+        this.state.$update = function (state) {
+          this.textContent = ''; // fast removal of children
+          this.appendChild(code.create(this, state));
+        }.bind(this, this.state);
+
+        if (this.state.connected) this.state.connected(this);
+        console.log(`connectedCallback('${name}')`);
+      }
+
+      disconnectedCallback() {
+        if (this.state.disconnected) this.state.disconnected();
+
+        // todo: remove eventlisteners
+        console.log(`disconnectedCallback('${name}')`);
+      }
+
+      registerNode(node, vars, state, text) {
+        const converter = new Function('state', `{${vars.join(', ')}}`, `return \`${text}\``);
+
+        const map = this.updateMap;
+        vars.forEach(v => {
+          const nodes = map.get(v) || [];
+          nodes.push({ node, converter, state });
+          map.set(v, nodes);
+        })
+      }
+
+      registerNodeAttribute(node, vars, state, key, text) {
+        const converter = new Function('state', `{${vars.join(', ')}}`, `return \`${text}\``);
+
+        const map = this.updateMap;
+        vars.forEach(v => {
+          const nodes = map.get(v) || [];
+          nodes.push({ node, converter, attr: key, state });
+          map.set(v, nodes);
+        })
+      }
+
+      resetCache() {
+        this.updateMap.clear();
+      }
+    });
+  }
+
+  function installStyle(name, strings) {
+    const block = /\s*(?<key>.+?)\s*\{(?<body>[^}]*)\}/g;
+
+    let b, style = '';
+    while (!!(b = block.exec(strings[0]))) {
+      if (b.groups.key.indexOf(':root') === 0) {
+        style += `${b.groups.key.replace(':root', name)} {${b.groups.body}}\n`;
+      }
+      else {
+        style += `${name} ${b.groups.key} {${b.groups.body}}\n`;
+      }
+    }
+    const elem = document.createElement('style');
+    elem.id = name;
+    elem.textContent = style;
+    document.head.appendChild(elem);
+  }
+
+  function getTemplatedVariables(source, key = '', state = null) {
+    const templateRegEx = /\{(?<property>[^}]*)\}/g;
+    const varRegEx = /[a-zA-Z][a-zA-Z0-9\.]*/g;
+    let content = source, b;
+    const vars = [];
+    while (!!(b = templateRegEx.exec(content))) {
+      const id = b.groups.property;
+      const replaceId = id || key;
+      [...id.matchAll(varRegEx)].forEach(a => {
+        const property = (a[0].split('.'))[0];
+        vars.push(`${property}`);
+      });
+    }
+    return vars;
+  }
+
+  function installRenderer(name, strings) {
+    const templateRegEx = /\{(?<event>[^}:]*)(?::(?<method>[^}]+))?\}/g;
+    const elementRegEx = /(?<id>[a-zA-Z0-9-]+)(?:\{(?<member>[^}]*)\})?/g;
+    const eachRegEx = /^(?<item>[a-zA-Z0-9-]+(,\s*[a-zA-Z0-9-]+)?) in (?<member>[^}]+)$/;
+    const ifRegEx = /^(?<condition>.+)$/;
+
+    let content = strings[0], target = `${strings[0]}`, record;
+
+    const tree = this.tree = new ObjectTree({ name });
+
+    const xmlns = ['http://www.w3.org/1999/xhtml'];
+    for (let token of tokenizer(content)) {
+      switch (token.type) {
+        case OPEN:
+          elementRegEx.lastIndex = 0;
+          const { groups: g } = elementRegEx.exec(token.id);
+          record = { type: g.id, key: g.member !== '' ? g.member : g.id, attributes: [], events: [], xmlns: xmlns[xmlns.length - 1] };
+          token.data.forEach(a => {
+            if (a.key === 'xmlns') {
+              record.xmlns = a.value;
+            }
+            if (a.key === 'on') {
+              templateRegEx.lastIndex = 0;
+              const { groups: g } = templateRegEx.exec(a.value);
+              record.events.push({ id: g.event, method: g.method ?? g.event });
+            }
+            else {
+              record.attributes.push({ key: a.key, raw: a.value });
+            }
+          });
+          tree.enter(record);
+          xmlns.push(record.xmlns);
+          break;
+        case TEXT:
+          tree.push({ type: '#text', raw: token.data });
+          break;
+        case CLOSE:
+          tree.leave();
+          xmlns.pop();
+          break;
+        case HINT:
+          switch (token.id) {
+            case '#each': {
+              const { groups: g } = eachRegEx.exec(token.data);
+              tree.enter({ type: token.id, value: g });
+              xmlns.push(xmlns[xmlns.length - 1]);
+            } break;
+            case '#if': {
+              const { groups: g } = ifRegEx.exec(token.data);
+              tree.enter({ type: token.id, value: g });
+              xmlns.push(xmlns[xmlns.length - 1]);
+            } break;
+            case ':elseif': {
+              tree.leave();
+              xmlns.pop();
+              const { groups: g } = ifRegEx.exec(token.data);
+              tree.enter({ type: token.id, value: g });
+              xmlns.push(xmlns[xmlns.length - 1]);
+            } break;
+            case ':else':
+              tree.leave();
+              xmlns.pop();
+              tree.enter({ type: ':else' });
+              xmlns.push(xmlns[xmlns.length - 1]);
+              break;
+            case '/each':
+            case '/if':
+              tree.leave();
+              xmlns.pop();
+              break;
+          }
+          break;
+      }
+    }
+  }
+
+  m.$('loader').set('html', (info, context) => {
+    const name = info.n.replace('[html]', 'm-');
+    if (m.$('modules').get(name)) return;
+
+    const options = { code: {} };
+
+    const scope = new m.constructor(info, context);
+    scope.html = installRenderer.bind(options, name);
+    scope.css = installStyle.bind(options, name);
+    scope.redraw = customElement => customElement.$update({});
+    scope.render = customElement => customElement.$renew();
+
+    const builder = m.$('modules').get(info.n)(scope);
+    builders.set(name, builder);
+
+    defineElement(name, options);
+  })
+
+})
+mdlr('[html]realworld-main-articles', m => {
+
+  m.html`
+    {#each article in articles}
+      <div class="article-preview">
+      <div class="article-meta">
+        <a href="#/profile"><img src="{article.author.image}" /></a>
+        <div class="info">
+        <a href="" class="author">{article.author.username}</a>
+        <span class="date">January 20th</span>
+        </div>
+        <button class="btn btn-outline-primary btn-sm pull-xs-right">
+        <i class="ion-heart"></i>{article.favoritesCount}
+        </button>
+      </div>
+      <a href="#/article?slug={article.slug}" class="preview-link">
+        <h1>{article.title}</h1>
+        <p>{article.description}</p>
+        <span>Read more...</span>
+        <ul class="tag-list">
+        {#each tag in article.tagList}
+          <li class="tag-default tag-pill tag-outline">{tag}</li>
+        {/each}
+        </ul>
+      </a>
+      </div>
+    {:else}
+      <div class="article-preview">loading articles...</div>
+    {/each}`;
+
+  return class {
+    api = null;
+    user = null;
+    articles = [];
+    feed = 'global';
+
+    async connected() {
+      console.log('feed:', this.feed);
+      this.articles = await (this.feed === 'user' ? this.api.getUserFeed(this.user) : this.api.getGlobalFeed());
+
+      console.log('done', this.articles);
+      m.redraw(this);
+    }
+  }
+})
+mdlr('[html]realworld-main-tags', m => {
+
+  m.html`
+    <div class="sidebar">
+      <p>Popular Tags</p>
+
+      <div class="tag-list">
+      {#each tag in tags}
+        <a href="" class="tag-pill tag-default">{tag}</a>
+      {:else}
+        <span>loading tags...</span>
+      {/each}
+      </div>
+    </div>`;
+
+  return class {
+    api = null;
+    tags = [];
+
+    async connected() {
+      this.tags = await this.api.getTags();
+
+      m.redraw(this);
+    }
+  }
+})
+mdlr('[html]realworld-article-comments', m => {
+
+  m.html`
+    <div class="col-xs-12 col-md-8 offset-md-2">
+
+      <form class="card comment-form">
+        <div class="card-block">
+          <textarea class="form-control" placeholder="Write a comment..." rows="3"></textarea>
+        </div>
+        <div class="card-footer">
+          <img src="{user.image}" class="comment-author-img" />
+          <button class="btn btn-sm btn-primary">
+            Post Comment
+          </button>
+        </div>
+      </form>
+
+      {#each comment in comments}
+      <div class="card">
+        <div class="card-block">
+          <p class="card-text">{comment.body}</p>
+        </div>
+        <div class="card-footer">
+          <a href="" class="comment-author">
+            <img src="{comment.author.image}" class="comment-author-img" />
+          </a>
+          <a href="" class="comment-author">{comment.author.username}</a>
+          <span class="date-posted">Dec 29th</span>
+        </div>
+      </div>
+      {/each}
+
+    </div>`;
+
+  m.css`
+    :root {
+      display: contents;
+    }`;
+
+  return class {
+    api = null;
+    user = null;
+    options = null;
+
+    comments = null;
+  
+    async connected() {
+      this.comments = await this.api.getArticleComments(this.options.slug);
+      console.log(this.comments);
+      m.redraw(this);
+    }
+  }
+
+})
+mdlr('[unit]html-tokenizer', m => {
+
+  const attributesRegEx = /(?<key>[a-zA-Z0-9\-]+)=(?:"(?<value1>(?:\\"|[^"\r\n])*)"|(?<value2>(?:\\"|[^\x20>\r\n])*))/g;
+  const tagRegEx = /(?<space>[\s]+)(?=<|$|{)|\<\/(?<close>[^>]+)\>|\<(?<open>(?<tag>[a-z0-9-]+)({[^}]*})?)[^>]*\>|{(?<hint>[#:\/][a-z]+)[\s]*(?<body>({[^}]*}|[^{}]*)*)}|(?<text>[^<]+)/g;
+
+  const empty = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'parm', 'source', 'track', 'wbr']);
+
+  const types = {
+    CLOSE: 'close',
+    OPEN: 'open',
+    SPACE: 'space',
+    TEXT: 'text',
+    HINT: 'hint',
+  }
+
+  function getAttributesFromOpenTagMatch(match) {
+    return [...match.matchAll(attributesRegEx)].map(a => a.groups).map(a => ({ key: a.key, value: (a.value1 ?? a.value2) }));
+  }
+
+  function createRecord(id, type, data = null) {
+    return { id, type, data };
+  }
+
+  function* tokenizer(html) {
+    tagRegEx.lastIndex = 0;
+
+    let match = null;
+    while (null != (match = tagRegEx.exec(html))) {
+      const { space, close, open, tag, hint, body, text } = match.groups;
+
+      if (open) {
+        const attributes = getAttributesFromOpenTagMatch(match[0]);
+        yield createRecord(open, types.OPEN, attributes);
+        if (empty.has(tag) || match[0].endsWith('/>')) {
+          yield createRecord(open, types.CLOSE);
+        }
+      }
+      if (close) {
+        yield createRecord(close, types.CLOSE);
+      }
+      if (space) {
+        yield createRecord(null, types.SPACE, space);
+      }
+      if (text) {
+        yield createRecord(null, types.TEXT, text);
+      }
+      if (hint) {
+        yield createRecord(hint, types.HINT, body);
+      }
+    }
+  }
+
+  return { tokenizer, types };
+
+})
+mdlr('[unit]object-tree', m => {
+
+  class ObjectTree {
+
+    constructor(node = {}) {
+      this.node = node;
+      this.list = [];
+      this.stack = [];
+    }
+
+    push(...args) {
+      for (let node of args) {
+        const record = { node };
+        this.list.push(record);
+      }
+      return this;
+    }
+
+    enter(node) {
+      const record = { node, list: [] }
+      this.stack.push(this.list);
+      this.list.push(record);
+      this.list = record.list;
+      return this;
+    }
+
+    leave() {
+      this.list = this.stack.pop();
+      return this;
+    }
+
+    get depth() {
+      return this.stack.length;
+    }
+
+  }
+
+  return { ObjectTree };
+})
+mdlr('[mdlr]html-loader');
+mdlr('[html]realworld'); document.body.innerHTML = '<m-realworld></m-realworld>';</script></body></html>
