@@ -35,10 +35,8 @@ mdlr('[html]realworld-main-articles', m => {
     feed = 'global';
 
     async connected() {
-      console.log('feed:', this.feed);
       this.articles = await (this.feed === 'user' ? this.api.getUserFeed(this.user) : this.api.getGlobalFeed());
 
-      console.log('done', this.articles);
       m.redraw(this);
     }
   }

@@ -89,7 +89,7 @@ mdlr('[html]realworld-article', m => {
 
     async connected() {
       this.article = await this.api.getArticle(this.options.slug);
-      console.log(this.article);
+
       m.redraw(this);
     }
   }
