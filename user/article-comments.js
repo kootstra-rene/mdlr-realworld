@@ -30,8 +30,7 @@ mdlr('[html]realworld-article-comments', m => {
       </div>
       {/each}
 
-    </div>
-  `;
+    </div>`;
 
   m.css`
     :root {
