@@ -1,5 +1,15 @@
 mdlr('api:realworld', m => {
 
+  function buildHeaders(user) {
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+    if (user) {
+      headers.authorization = `Token ${user.token}`;
+    }
+
+    return headers;
+  }
   return {
 
     login: async (email, password) => {
@@ -35,11 +45,9 @@ mdlr('api:realworld', m => {
       return result.articles;
     },
 
-    getArticle: async (slug) => {
+    getArticle: async (slug, user) => {
       const result = await fetch(`https://api.realworld.io/api/articles/${slug}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: buildHeaders(user)
       }).then(r => r.json());
 
       return result.article;
