@@ -45,7 +45,7 @@ mdlr('[html]realworld', m => {
     user = null;
 
     constructor() {
-     this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
+      this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
 
       const url = new URL(window.location.href);
       this.hash = url.hash;
@@ -55,6 +55,9 @@ mdlr('[html]realworld', m => {
     connected() {
       // primitive router
       window.addEventListener('hashchange', e => {
+        // todo: put user info in seperator module
+        this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
+
         const url = new URL(e.newURL);
         this.hash = url.hash;
 
