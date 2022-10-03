@@ -447,19 +447,7 @@ mdlr('[html]realworld-article', m => {
         {#if article}
           <h1>{article.title}</h1>
 
-          <div class="article-meta">
-            <a href="#/profile"><img src="{article.author.image}" /></a>
-            <div class="info">
-              <a href="" class="author">{article.author.username}</a>
-              <span class="date">{updated}</span>
-            </div>
-            <button class="btn btn-sm btn-outline-secondary">
-              <i class="ion-plus-round" />Follow {article.author.username} <span class="counter">(10)</span>
-            </button>
-            <button class="btn btn-sm btn-outline-primary">
-              <i class="ion-heart" />{favorited} Post <span class="counter">({article.favoritesCount})</span>
-            </button>
-          </div>
+          <m-realworld-article-meta article={article} details={details} />
         {:else}
           <h1>...</h1>
         {/if}
@@ -487,20 +475,7 @@ mdlr('[html]realworld-article', m => {
 
         {#if article}
         <div class="article-actions">
-          <div class="article-meta">
-            <a href="#/profile"><img src="{article.author.image}" /></a>
-            <div class="info">
-              <a href="" class="author">{article.author.username}</a>
-              <span class="date">{updated}</span>
-            </div>
-
-            <button class="btn btn-sm btn-outline-secondary">
-              <i class="ion-plus-round" />Follow {article.author.username} <span class="counter">(10)</span>
-            </button>
-            <button class="btn btn-sm btn-outline-primary">
-              <i class="ion-heart" />{favorited} <span class="counter">({article.favoritesCount})</span>
-            </button>
-          </div>
+          <m-realworld-article-meta article={article} details={details} />
         </div>
 
         <div class="row">
@@ -524,23 +499,12 @@ mdlr('[html]realworld-article', m => {
     options = null;
 
     article = null;
+    details = true;
 
     async connected() {
       this.article = await this.api.getArticle(this.user, this.options);
 
       m.redraw(this);
-    }
-
-    // todo: should these be part of the article dao?
-
-    get favorited() {
-      return !this.article?.favorited ? 'Favorite' : 'Unfavorite';
-    }
-
-    get updated() {
-      const options = { month: 'long', day: 'numeric', year: 'numeric'};
-
-      return new Intl.DateTimeFormat('en-US', options).format(new Date(this.article?.updatedAt || '1970-1-1'));
     }
   }
 
@@ -1120,19 +1084,13 @@ mdlr('[mdlr]html-loader', m => {
 })
 mdlr('[html]realworld-main-articles', m => {
 
+  m.require('[html]realworld-article-meta');
+
   m.html`
     {#each article in articles}
       <div class="article-preview">
-      <div class="article-meta">
-        <a href="#/profile"><img src="{article.author.image}" /></a>
-        <div class="info">
-        <a href="" class="author">{article.author.username}</a>
-        <span class="date">January 20th</span>
-        </div>
-        <button class="btn btn-outline-primary btn-sm pull-xs-right">
-        <i class="ion-heart"></i>{article.favoritesCount}
-        </button>
-      </div>
+
+      <m-realworld-article-meta article={article} />
       <a href="#/article?slug={article.slug}" class="preview-link">
         <h1>{article.title}</h1>
         <p>{article.description}</p>
@@ -1166,6 +1124,7 @@ mdlr('[html]realworld-main-articles', m => {
       m.redraw(this);
     }
   }
+
 })
 mdlr('[html]realworld-main-tags', m => {
 
@@ -1215,14 +1174,14 @@ mdlr('[html]realworld-article-comments', m => {
       {#each comment in comments}
       <div class="card">
         <div class="card-block">
-          <p class="card-text">{comment.body}</p>
+          <p class="card-text">{ comment.body }</p>
         </div>
         <div class="card-footer">
           <a href="" class="comment-author">
-            <img src="{comment.author.image}" class="comment-author-img" />
+            <img src="{ comment.author.image }" class="comment-author-img" />
           </a>
-          <a href="" class="comment-author">{comment.author.username}</a>
-          <span class="date-posted">Dec 29th</span>
+          <a href="" class="comment-author">{ comment.author.username }</a>
+          <span class="date-posted">{ formatDate(comment) }</span>
         </div>
       </div>
       {/each}
@@ -1240,11 +1199,17 @@ mdlr('[html]realworld-article-comments', m => {
     options = null;
 
     comments = null;
-  
+
     async connected() {
       this.comments = await this.api.getArticleComments(this.options.slug);
 
       m.redraw(this);
+    }
+
+    formatDate(comment) {
+      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+
+      return new Intl.DateTimeFormat('en-US', options).format(new Date(comment?.updatedAt || '1970-01-01'));
     }
   }
 
@@ -1342,6 +1307,45 @@ mdlr('[unit]object-tree', m => {
   }
 
   return { ObjectTree };
+})
+mdlr('[html]realworld-article-meta', m => {
+
+  m.html`
+    <div class="article-meta">
+      <a href="#/profile"><img src="{ article.author.image }" /></a>
+      <div class="info">
+        <a href="" class="author">{ article.author.username }</a>
+        <span class="date">{ formatDate() }</span>
+      </div>
+      {#if !details}
+      <button class="btn btn-outline-primary btn-sm pull-xs-right">
+        <i class="ion-heart" />{ article.favoritesCount }
+      </button>
+      {:else}
+      <button class="btn btn-sm btn-outline-secondary">
+        <i class="ion-plus-round" />Follow {article.author.username} <span class="counter">(10)</span>
+      </button>
+      <button class="btn btn-sm btn-outline-primary">
+        <i class="ion-heart" />{favorited} Post <span class="counter">({article.favoritesCount})</span>
+      </button>
+      {/if}
+    </div>`;
+
+  return class {
+    article = null;
+    details = false;
+
+    get favorited() {
+      return !this.article?.favorited ? 'Favorite' : 'Unfavorite';
+    }
+
+    formatDate() {
+      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+
+      return new Intl.DateTimeFormat('en-US', options).format(new Date(this.article?.updatedAt || '1970-01-01'));
+    }
+  }
+
 })
 mdlr('[mdlr]html-loader');
 mdlr('[html]realworld'); document.body.innerHTML = '<m-realworld></m-realworld>';</script></body></html>
