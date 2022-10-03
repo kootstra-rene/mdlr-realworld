@@ -27,10 +27,15 @@ mdlr('[html]realworld-main', m => {
                 <li class="nav-item">
                   <a class="nav-link active" href="#/?feed=global">Global Feed</a>
                 </li>
+                {#if !!options.tag}
+                <li class="nav-item">
+                  <a class="nav-link active" href="#/?tag={options.tag}"># {options.tag}</a>
+                </li>
+                {/if}
               </ul>
             </div>
 
-            <m-realworld-main-articles api={api} user={user} feed={options.feed} />
+            <m-realworld-main-articles api={api} user={user} options={options} feed={options.feed} />
 
           </div>
 

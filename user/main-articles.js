@@ -31,11 +31,12 @@ mdlr('[html]realworld-main-articles', m => {
   return class {
     api = null;
     user = null;
+    options = null;
     articles = [];
     feed = 'global';
 
     async connected() {
-      this.articles = await (this.feed === 'user' ? this.api.getUserFeed(this.user) : this.api.getGlobalFeed());
+      this.articles = await (this.feed === 'user' ? this.api.getUserFeed(this.user) : this.api.getGlobalFeed(this.user, this.options));
 
       m.redraw(this);
     }
