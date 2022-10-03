@@ -23,10 +23,10 @@ mdlr('[html]realworld-article-comments', m => {
           <p class="card-text">{ comment.body }</p>
         </div>
         <div class="card-footer">
-          <a href="" class="comment-author">
+          <a href="#/profile" class="comment-author">
             <img src="{ comment.author.image }" class="comment-author-img" />
           </a>
-          <a href="" class="comment-author">{ comment.author.username }</a>
+          <a href="#/profile" class="comment-author">{ comment.author.username }</a>
           <span class="date-posted">{ formatDate(comment) }</span>
         </div>
       </div>

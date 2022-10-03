@@ -4,7 +4,7 @@ mdlr('[html]realworld-article-meta', m => {
     <div class="article-meta">
       <a href="#/profile"><img src="{ article.author.image }" /></a>
       <div class="info">
-        <a href="" class="author">{ article.author.username }</a>
+        <a href="#/profile" class="author">{ article.author.username }</a>
         <span class="date">{ formatDate() }</span>
       </div>
       {#if !details}

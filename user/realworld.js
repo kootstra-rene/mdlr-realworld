@@ -32,6 +32,7 @@ mdlr('[html]realworld', m => {
 
   document.head.innerHTML += `
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Conduit</title>
     <!-- Import Ionicon icons & Google Fonts our Bootstrap theme relies on -->
     <link prefetch href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
@@ -73,7 +74,7 @@ mdlr('[html]realworld', m => {
         return a;
       }, {});
 
-      this.hash = hash;
+      this.hash = hash || '#/';
     }
   }
 
