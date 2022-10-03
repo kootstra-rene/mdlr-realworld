@@ -21,15 +21,15 @@ mdlr('[html]realworld-main', m => {
               <ul class="nav nav-pills outline-active">
                 {#if !!user}
                 <li class="nav-item">
-                  <a class="nav-link disabled" href="#/?feed=user">Your Feed</a>
+                  <a class="nav-link {userFeed}" href="#/?feed=user">Your Feed</a>
                 </li>
                 {/if}
                 <li class="nav-item">
-                  <a class="nav-link active" href="#/?feed=global">Global Feed</a>
+                  <a class="nav-link {globalFeed}" href="#/?feed=global">Global Feed</a>
                 </li>
                 {#if !!options.tag}
                 <li class="nav-item">
-                  <a class="nav-link active" href="#/?tag={options.tag}"># {options.tag}</a>
+                  <a class="nav-link {tagFeed}" href="#/?feed=tag&tag={options.tag}"># {options.tag}</a>
                 </li>
                 {/if}
               </ul>
@@ -52,5 +52,18 @@ mdlr('[html]realworld-main', m => {
       api = null;
       user = null;
       options = {};
+
+      // todo: there should be an easier method to this
+      get userFeed() {
+        return this.options.feed === 'user' ? 'active' : 'disabled';
+      }
+
+      get globalFeed() {
+        return this.options.feed === 'global' ? 'active' : 'disabled';
+      }
+
+      get tagFeed() {
+        return this.options.feed === 'tag' ? 'active' : 'disabled';
+      }
     }
 })

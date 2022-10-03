@@ -25,14 +25,19 @@ mdlr('[html]realworld-main-articles', m => {
       </a>
       </div>
     {:else}
+      {#if articles === null}
       <div class="article-preview">loading articles...</div>
+      {:else}
+      <div class="article-preview">No articles are here... yet.</div>
+      {/if}
     {/each}`;
 
   return class {
     api = null;
     user = null;
     options = null;
-    articles = [];
+
+    articles = null;
     feed = 'global';
 
     async connected() {

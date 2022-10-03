@@ -6,7 +6,7 @@ mdlr('[html]realworld-main-tags', m => {
 
       <div class="tag-list">
       {#each tag in tags}
-        <a href="#/?tag={tag}" class="tag-pill tag-default">{tag}</a>
+        <a href="#/?feed=tag&tag={tag}" class="tag-pill tag-default">{tag}</a>
       {:else}
         <span>loading tags...</span>
       {/each}
