@@ -98,6 +98,7 @@ mdlr('[html]realworld', m => {
 
   document.head.innerHTML += `
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Conduit</title>
     <!-- Import Ionicon icons & Google Fonts our Bootstrap theme relies on -->
     <link prefetch href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
@@ -139,7 +140,7 @@ mdlr('[html]realworld', m => {
         return a;
       }, {});
 
-      this.hash = hash;
+      this.hash = hash || '#/';
     }
   }
 
@@ -1177,10 +1178,10 @@ mdlr('[html]realworld-article-comments', m => {
           <p class="card-text">{ comment.body }</p>
         </div>
         <div class="card-footer">
-          <a href="" class="comment-author">
+          <a href="#/profile" class="comment-author">
             <img src="{ comment.author.image }" class="comment-author-img" />
           </a>
-          <a href="" class="comment-author">{ comment.author.username }</a>
+          <a href="#/profile" class="comment-author">{ comment.author.username }</a>
           <span class="date-posted">{ formatDate(comment) }</span>
         </div>
       </div>
@@ -1314,7 +1315,7 @@ mdlr('[html]realworld-article-meta', m => {
     <div class="article-meta">
       <a href="#/profile"><img src="{ article.author.image }" /></a>
       <div class="info">
-        <a href="" class="author">{ article.author.username }</a>
+        <a href="#/profile" class="author">{ article.author.username }</a>
         <span class="date">{ formatDate() }</span>
       </div>
       {#if !details}
