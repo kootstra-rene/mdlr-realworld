@@ -1,18 +1,12 @@
 mdlr('[html]realworld-main-articles', m => {
 
+  m.require('[html]realworld-article-meta');
+
   m.html`
     {#each article in articles}
       <div class="article-preview">
-      <div class="article-meta">
-        <a href="#/profile"><img src="{article.author.image}" /></a>
-        <div class="info">
-        <a href="" class="author">{article.author.username}</a>
-        <span class="date">{formatDate(article)}</span>
-        </div>
-        <button class="btn btn-outline-primary btn-sm pull-xs-right">
-        <i class="ion-heart"></i>{article.favoritesCount}
-        </button>
-      </div>
+
+      <m-realworld-article-meta article={article} />
       <a href="#/article?slug={article.slug}" class="preview-link">
         <h1>{article.title}</h1>
         <p>{article.description}</p>
@@ -44,12 +38,6 @@ mdlr('[html]realworld-main-articles', m => {
       this.articles = await (this.feed === 'user' ? this.api.getUserFeed(this.user) : this.api.getGlobalFeed(this.user, this.options));
 
       m.redraw(this);
-    }
-
-    formatDate(article) {
-      const options = { month: 'long', day: 'numeric', year: 'numeric'};
-
-      return new Intl.DateTimeFormat('en-US', options).format(new Date(article?.updatedAt || '1970-01-01'));
     }
   }
 

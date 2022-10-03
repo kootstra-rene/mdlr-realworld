@@ -11,19 +11,7 @@ mdlr('[html]realworld-article', m => {
         {#if article}
           <h1>{article.title}</h1>
 
-          <div class="article-meta">
-            <a href="#/profile"><img src="{article.author.image}" /></a>
-            <div class="info">
-              <a href="" class="author">{article.author.username}</a>
-              <span class="date">{updated}</span>
-            </div>
-            <button class="btn btn-sm btn-outline-secondary">
-              <i class="ion-plus-round" />Follow {article.author.username} <span class="counter">(10)</span>
-            </button>
-            <button class="btn btn-sm btn-outline-primary">
-              <i class="ion-heart" />{favorited} Post <span class="counter">({article.favoritesCount})</span>
-            </button>
-          </div>
+          <m-realworld-article-meta article={article} details={details} />
         {:else}
           <h1>...</h1>
         {/if}
@@ -51,20 +39,7 @@ mdlr('[html]realworld-article', m => {
 
         {#if article}
         <div class="article-actions">
-          <div class="article-meta">
-            <a href="#/profile"><img src="{article.author.image}" /></a>
-            <div class="info">
-              <a href="" class="author">{article.author.username}</a>
-              <span class="date">{updated}</span>
-            </div>
-
-            <button class="btn btn-sm btn-outline-secondary">
-              <i class="ion-plus-round" />Follow {article.author.username} <span class="counter">(10)</span>
-            </button>
-            <button class="btn btn-sm btn-outline-primary">
-              <i class="ion-heart" />{favorited} <span class="counter">({article.favoritesCount})</span>
-            </button>
-          </div>
+          <m-realworld-article-meta article={article} details={details} />
         </div>
 
         <div class="row">
@@ -88,23 +63,12 @@ mdlr('[html]realworld-article', m => {
     options = null;
 
     article = null;
+    details = true;
 
     async connected() {
       this.article = await this.api.getArticle(this.user, this.options);
 
       m.redraw(this);
-    }
-
-    // todo: should these be part of the article dao?
-
-    get favorited() {
-      return !this.article?.favorited ? 'Favorite' : 'Unfavorite';
-    }
-
-    get updated() {
-      const options = { month: 'long', day: 'numeric', year: 'numeric'};
-
-      return new Intl.DateTimeFormat('en-US', options).format(new Date(this.article?.updatedAt || '1970-1-1'));
     }
   }
 
