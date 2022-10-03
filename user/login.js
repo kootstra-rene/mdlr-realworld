@@ -12,11 +12,13 @@ mdlr('[html]realworld-login', m => {
             <p class="text-xs-center">
               <a href="#/login">Have an account?</a>
             </p>
+            {/if}
 
             <ul class="error-messages">
-              <li>That email is already taken</li>
+              {#if error}
+              <li>{error}</li>
+              {/if}
             </ul>
-            {/if}
 
             <form method="dialog">
               {#if mode === 'up'}
@@ -43,15 +45,31 @@ mdlr('[html]realworld-login', m => {
       </div>
     </div>`;
 
+  m.css`
+    ul {
+      height: 1.5rem;
+      line-height: 1.5rem;
+    }
+  `;
+
   return class {
     api = null;
     mode = '';
+    error = null;
 
     async click(e) {
       const email = this.email.value;
       const password = this.password.value;
 
       const result = await this.api.login(email, password);
+      if (result.errors) {
+        this.error = Object.entries(result.errors).reduce((a, [key, list]) => {
+          return a + `${key} ${list.join(', ')}`;
+        }, '');;
+
+        m.redraw(this);
+        return;
+      }
 
       localStorage.setItem('user', JSON.stringify(result)); // Q: whos responsibility is this?
 
