@@ -18,7 +18,7 @@ mdlr('[html]realworld', m => {
     {:elseif hash === '#/login'}
       <m-realworld-login api={api} mode="{'in'}" />
     {:elseif hash === '#/register'}
-      <m-realworld-login mode="{'up'}"/>
+      <m-realworld-login api={api} mode="{'up'}"/>
     {:elseif hash === '#/settings'}
       <m-realworld-settings user={user} />
     {:elseif hash === '#/editor'}

@@ -12,6 +12,10 @@ mdlr('[html]realworld-login', m => {
             <p class="text-xs-center">
               <a href="#/login">Have an account?</a>
             </p>
+            {:else}
+            <p class="text-xs-center">
+              <a href="#/register">Need an account?</a>
+            </p>
             {/if}
 
             <ul class="error-messages">
@@ -23,7 +27,7 @@ mdlr('[html]realworld-login', m => {
             <form method="dialog">
               {#if mode === 'up'}
               <fieldset class="form-group">
-                <input class="form-control form-control-lg" type="text" placeholder="Your Name">
+                <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name">
               </fieldset>
               {/if}
 
@@ -56,12 +60,31 @@ mdlr('[html]realworld-login', m => {
     api = null;
     mode = '';
     error = null;
+    username = null;
 
-    async click(e) {
+    click(e) {
+      if (this.mode === 'in') this.login();
+      if (this.mode === 'up') this.signup();
+    }
+
+    async login() {
       const email = this.email.value;
       const password = this.password.value;
 
       const result = await this.api.login(email, password);
+      this.updateUserAndRedirect(result);
+    }
+
+    async signup() {
+      const email = this.email.value;
+      const password = this.password.value;
+      const username = this.username.value;
+
+      const result = await this.api.signup(email, password, username);
+      this.updateUserAndRedirect(result);
+    }
+  
+    updateUserAndRedirect(result) {
       if (result.errors) {
         this.error = Object.entries(result.errors).reduce((a, [key, list]) => {
           return a + `${key} ${list.join(', ')}`;
@@ -78,6 +101,7 @@ mdlr('[html]realworld-login', m => {
 
       //m.redirect('#/'); // todo: this would be awesome
     }
+
   };
 
 })
