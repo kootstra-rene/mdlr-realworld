@@ -222,16 +222,21 @@ mdlr('[html]realworld-main', m => {
               <ul class="nav nav-pills outline-active">
                 {#if !!user}
                 <li class="nav-item">
-                  <a class="nav-link disabled" href="#/?feed=user">Your Feed</a>
+                  <a class="nav-link {userFeed}" href="#/?feed=user">Your Feed</a>
                 </li>
                 {/if}
                 <li class="nav-item">
-                  <a class="nav-link active" href="#/?feed=global">Global Feed</a>
+                  <a class="nav-link {globalFeed}" href="#/?feed=global">Global Feed</a>
                 </li>
+                {#if !!options.tag}
+                <li class="nav-item">
+                  <a class="nav-link {tagFeed}" href="#/?feed=tag&tag={options.tag}"># {options.tag}</a>
+                </li>
+                {/if}
               </ul>
             </div>
 
-            <m-realworld-main-articles api={api} user={user} feed={options.feed} />
+            <m-realworld-main-articles api={api} user={user} options={options} feed={options.feed} />
 
           </div>
 
@@ -248,6 +253,19 @@ mdlr('[html]realworld-main', m => {
       api = null;
       user = null;
       options = {};
+
+      // todo: there should be an easier method to this
+      get userFeed() {
+        return this.options.feed === 'user' ? 'active' : 'disabled';
+      }
+
+      get globalFeed() {
+        return this.options.feed === 'global' ? 'active' : 'disabled';
+      }
+
+      get tagFeed() {
+        return this.options.feed === 'tag' ? 'active' : 'disabled';
+      }
     }
 })
 mdlr('[html]realworld-login', m => {
@@ -508,7 +526,7 @@ mdlr('[html]realworld-article', m => {
     article = null;
 
     async connected() {
-      this.article = await this.api.getArticle(this.options.slug, this.user);
+      this.article = await this.api.getArticle(this.user, this.options);
 
       m.redraw(this);
     }
@@ -695,8 +713,10 @@ mdlr('[unit]api:realworld', m => {
       return result; // todo: change to result.user
     },
 
-    getGlobalFeed: async () => {
-      const result = await fetch(`https://api.realworld.io/api/articles?limit=10&offset=0`, {
+    getGlobalFeed: async (user, options) => {
+      let queryString = `limit=10&offset=0`;
+      if (options.tag) queryString = `tag=${options.tag}&${queryString}`;
+      const result = await fetch(`https://api.realworld.io/api/articles?${queryString}`, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -716,8 +736,8 @@ mdlr('[unit]api:realworld', m => {
       return result.articles;
     },
 
-    getArticle: async (slug, user) => {
-      const result = await fetch(`https://api.realworld.io/api/articles/${slug}`, {
+    getArticle: async (user, options) => {
+      const result = await fetch(`https://api.realworld.io/api/articles/${options.slug}`, {
         headers: buildHeaders(user)
       }).then(r => r.json());
 
@@ -1125,17 +1145,23 @@ mdlr('[html]realworld-main-articles', m => {
       </a>
       </div>
     {:else}
+      {#if articles === null}
       <div class="article-preview">loading articles...</div>
+      {:else}
+      <div class="article-preview">No articles are here... yet.</div>
+      {/if}
     {/each}`;
 
   return class {
     api = null;
     user = null;
-    articles = [];
+    options = null;
+
+    articles = null;
     feed = 'global';
 
     async connected() {
-      this.articles = await (this.feed === 'user' ? this.api.getUserFeed(this.user) : this.api.getGlobalFeed());
+      this.articles = await (this.feed === 'user' ? this.api.getUserFeed(this.user) : this.api.getGlobalFeed(this.user, this.options));
 
       m.redraw(this);
     }
@@ -1149,7 +1175,7 @@ mdlr('[html]realworld-main-tags', m => {
 
       <div class="tag-list">
       {#each tag in tags}
-        <a href="" class="tag-pill tag-default">{tag}</a>
+        <a href="#/?feed=tag&tag={tag}" class="tag-pill tag-default">{tag}</a>
       {:else}
         <span>loading tags...</span>
       {/each}
