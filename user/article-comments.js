@@ -45,7 +45,7 @@ mdlr('[html]realworld-article-comments', m => {
     options = null;
 
     comments = null;
-  
+
     async connected() {
       this.comments = await this.api.getArticleComments(this.options.slug);
 
