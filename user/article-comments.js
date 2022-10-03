@@ -20,14 +20,14 @@ mdlr('[html]realworld-article-comments', m => {
       {#each comment in comments}
       <div class="card">
         <div class="card-block">
-          <p class="card-text">{comment.body}</p>
+          <p class="card-text">{ comment.body }</p>
         </div>
         <div class="card-footer">
           <a href="" class="comment-author">
-            <img src="{comment.author.image}" class="comment-author-img" />
+            <img src="{ comment.author.image }" class="comment-author-img" />
           </a>
-          <a href="" class="comment-author">{comment.author.username}</a>
-          <span class="date-posted">Dec 29th</span>
+          <a href="" class="comment-author">{ comment.author.username }</a>
+          <span class="date-posted">{ formatDate(comment) }</span>
         </div>
       </div>
       {/each}
@@ -50,6 +50,12 @@ mdlr('[html]realworld-article-comments', m => {
       this.comments = await this.api.getArticleComments(this.options.slug);
 
       m.redraw(this);
+    }
+
+    formatDate(comment) {
+      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+
+      return new Intl.DateTimeFormat('en-US', options).format(new Date(comment?.updatedAt || '1970-01-01'));
     }
   }
 
