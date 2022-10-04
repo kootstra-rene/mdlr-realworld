@@ -26,7 +26,7 @@ mdlr('[html]realworld', m => {
     {:elseif hash === '#/article'}
       <m-realworld-article api={api} user={user} options={options} />
     {:elseif hash === '#/profile'}
-      <m-realworld-profile />
+      <m-realworld-profile api={api} user={user} options={options} />
     {/if}
     <m-realworld-footer />`;
 
@@ -42,6 +42,7 @@ mdlr('[html]realworld', m => {
   `;
 
   return class {
+    api = api;
     hash = '#/';
     user = null;
     options = {};
@@ -50,7 +51,6 @@ mdlr('[html]realworld', m => {
       this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
 
       this.route(window.location.href);
-      this.api = api;
     }
 
     connected() {

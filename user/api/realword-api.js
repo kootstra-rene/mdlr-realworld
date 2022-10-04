@@ -39,6 +39,7 @@ mdlr('api:realworld', m => {
     getGlobalFeed: async (user, options) => {
       let queryString = `limit=10&offset=0`;
       if (options.tag) queryString = `tag=${options.tag}&${queryString}`;
+      if (options.username) queryString = `username=${options.username}&${queryString}`;
       const result = await fetch(`https://api.realworld.io/api/articles?${queryString}`, {
         headers: {
           'Content-Type': 'application/json'
@@ -85,6 +86,14 @@ mdlr('api:realworld', m => {
       }).then(r => r.json());
 
       return result.tags;
+    },
+
+    getProfile: async (user, options) => {
+      const result = await fetch(`https://api.realworld.io/api/profiles/${options.username}`, {
+        headers: buildHeaders(user)
+      }).then(r => r.json());
+
+      return result.profile;
     },
 
   };
