@@ -36,25 +36,12 @@ mdlr('api:realworld', m => {
       return result; // todo: change to result.user
     },
 
-    getGlobalFeed: async (user, options) => {
+    getArticles: async (user, options) => {
       let queryString = `limit=10&offset=0`;
       if (options.tag) queryString = `tag=${options.tag}&${queryString}`;
-      if (options.username) queryString = `username=${options.username}&${queryString}`;
+      if (options.username) queryString = `author=${options.username}&${queryString}`;
       const result = await fetch(`https://api.realworld.io/api/articles?${queryString}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(r => r.json());
-
-      return result.articles;
-    },
-
-    getUserFeed: async (user) => {
-      const result = await fetch(`https://api.realworld.io/api/articles/feed?limit=10&offset=0`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'authorization': `Token ${user.token}`
-        }
+        headers: buildHeaders(user)
       }).then(r => r.json());
 
       return result.articles;

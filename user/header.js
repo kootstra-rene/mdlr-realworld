@@ -30,7 +30,7 @@ mdlr('[html]realworld-header', m => {
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link"><img class="user-pic" src={user.image}>{user.username}</a>
+            <a class="nav-link" href="#/profile?username={user.username}"><img class="user-pic" src={user.image}>{user.username}</a>
           </li>
         {/if}
       </ul>

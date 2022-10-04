@@ -37,7 +37,7 @@ mdlr('[html]realworld-profile', m => {
             </ul>
           </div>
 
-          <m-realworld-main-articles api={api} user={user} options={options} feed={options.feed} />
+          <m-realworld-main-articles api={api} user={user} options={options} feed={feed} />
 
         </div>
 
@@ -51,9 +51,11 @@ mdlr('[html]realworld-profile', m => {
     user = null;
     options = null;
     profile = null;
+    feed = 'user';
 
     async connected() {
-      this.profile = await this.api.getProfile(null, this.options);
+      this.profile = await this.api.getProfile(this.user, this.options);
+      console.log('#profile:', this.options)
 
       m.redraw(this);
     }

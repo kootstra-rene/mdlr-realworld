@@ -21,7 +21,7 @@ mdlr('[html]realworld-main', m => {
               <ul class="nav nav-pills outline-active">
                 {#if !!user}
                 <li class="nav-item">
-                  <a class="nav-link {userFeed}" href="#/?feed=user">Your Feed</a>
+                  <a class="nav-link {userFeed}" href="#/?feed=user&username={user.username}">Your Feed</a>
                 </li>
                 {/if}
                 <li class="nav-item">
