@@ -7,17 +7,15 @@ mdlr('api:realworld', m => {
     if (user) {
       headers.authorization = `Token ${user.token}`;
     }
-
     return headers;
   }
+
   return {
 
     login: async (email, password) => {
       const result = await fetch(`https://api.realworld.io/api/users/login`, {
         method: 'post',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({ user: { email, password } })
       }).then(r => r.json());
 
@@ -27,9 +25,7 @@ mdlr('api:realworld', m => {
     signup: async (email, password, username) => {
       const result = await fetch(`https://api.realworld.io/api/users`, {
         method: 'post',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({ user: { email, password, username } })
       }).then(r => r.json());
 
@@ -77,6 +73,16 @@ mdlr('api:realworld', m => {
       }).then(r => r.json());
 
       return result.profile;
+    },
+
+    updateProfile: async (user, details) => {
+      const result = await fetch(`https://api.realworld.io/api/user`, {
+        method: 'put',
+        headers: buildHeaders(user),
+        body: JSON.stringify({ user: details })
+      }).then(r => r.json());
+
+      return result;
     },
 
   };

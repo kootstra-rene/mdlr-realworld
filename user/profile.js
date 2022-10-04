@@ -1,12 +1,10 @@
 mdlr('[html]realworld-profile', m => {
 
   m.html`
-    <div class="profile-page">
-
+  <div class="profile-page">
     <div class="user-info">
       <div class="container">
         <div class="row">
-
           {#if profile}
           <div class="col-xs-12 col-md-10 offset-md-1">
             <img src="{ profile.image }" class="user-img" />
@@ -17,14 +15,12 @@ mdlr('[html]realworld-profile', m => {
             </button>
           </div>
           {/if}
-
         </div>
       </div>
     </div>
 
     <div class="container">
       <div class="row">
-
         <div class="col-xs-12 col-md-10 offset-md-1">
           <div class="articles-toggle">
             <ul class="nav nav-pills outline-active">
@@ -36,13 +32,10 @@ mdlr('[html]realworld-profile', m => {
               </li>
             </ul>
           </div>
-
           <m-realworld-main-articles api={api} user={user} options={options} />
         </div>
-
       </div>
     </div>
-
   </div>`;
 
   return class {

@@ -1,60 +1,59 @@
 mdlr('[html]realworld-login', m => {
 
   m.html`
-    <div class="auth-page">
-      <div class="container page">
-        <div class="row">
+  <div class="auth-page">
+    <div class="container page">
+      <div class="row">
 
-          <div class="col-md-6 offset-md-3 col-xs-12">
-            <h1 class="text-xs-center">Sign {mode}</h1>
+        <div class="col-md-6 offset-md-3 col-xs-12">
+          <h1 class="text-xs-center">Sign {mode}</h1>
 
+          {#if mode === 'up'}
+          <p class="text-xs-center">
+            <a href="#/login">Have an account?</a>
+          </p>
+          {:else}
+          <p class="text-xs-center">
+            <a href="#/register">Need an account?</a>
+          </p>
+          {/if}
+
+          <ul class="error-messages">
+            {#if error}
+            <li>{error}</li>
+            {/if}
+          </ul>
+
+          <form method="dialog">
             {#if mode === 'up'}
-            <p class="text-xs-center">
-              <a href="#/login">Have an account?</a>
-            </p>
-            {:else}
-            <p class="text-xs-center">
-              <a href="#/register">Need an account?</a>
-            </p>
+            <fieldset class="form-group">
+              <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name">
+            </fieldset>
             {/if}
 
-            <ul class="error-messages">
-              {#if error}
-              <li>{error}</li>
-              {/if}
-            </ul>
+            <fieldset class="form-group">
+              <input{email} class="form-control form-control-lg" type="text" placeholder="Email">
+            </fieldset>
 
-            <form method="dialog">
-              {#if mode === 'up'}
-              <fieldset class="form-group">
-                <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name">
-              </fieldset>
-              {/if}
+            <fieldset class="form-group">
+              <input{password} class="form-control form-control-lg" type="password" placeholder="Password">
+            </fieldset>
 
-              <fieldset class="form-group">
-                <input{email} class="form-control form-control-lg" type="text" placeholder="Email">
-              </fieldset>
-
-              <fieldset class="form-group">
-                <input{password} class="form-control form-control-lg" type="password" placeholder="Password">
-              </fieldset>
-
-              <button class="btn btn-lg btn-primary pull-xs-right" on={click}>
-                Sign {mode}
-              </button>
-            </form>
-          </div>
-
+            <button class="btn btn-lg btn-primary pull-xs-right" on={click}>
+              Sign {mode}
+            </button>
+          </form>
         </div>
+
       </div>
-    </div>`;
+    </div>
+  </div>`;
 
   m.css`
-    ul {
-      height: 1.5rem;
-      line-height: 1.5rem;
-    }
-  `;
+  ul {
+    height: 1.5rem;
+    line-height: 1.5rem;
+  }`;
 
   return class {
     api = null;

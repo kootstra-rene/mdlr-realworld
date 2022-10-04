@@ -78,34 +78,38 @@ mdlr('[html]realworld', m => {
   const api = m.require('api:realworld');
 
   m.html`
-    <m-realworld-header user={user} />
-    {#if hash === '#/'}
-      <m-realworld-main api={api} user={user} options={options} />
-    {:elseif hash === '#/login'}
-      <m-realworld-login api={api} mode="{'in'}" />
-    {:elseif hash === '#/register'}
-      <m-realworld-login api={api} mode="{'up'}"/>
-    {:elseif hash === '#/settings'}
-      <m-realworld-settings user={user} />
-    {:elseif hash === '#/editor'}
-      <m-realworld-article-create />
-    {:elseif hash === '#/article'}
-      <m-realworld-article api={api} user={user} options={options} />
-    {:elseif hash === '#/profile'}
-      <m-realworld-profile api={api} user={user} options={options} />
-    {/if}
-    <m-realworld-footer />`;
+  <m-realworld-header user={user} />
+  {#if hash === '#/'}
+    <m-realworld-main api={api} user={user} options={options} />
+  {:elseif hash === '#/login'}
+    <m-realworld-login api={api} mode="{'in'}" />
+  {:elseif hash === '#/register'}
+    <m-realworld-login api={api} mode="{'up'}"/>
+  {:elseif hash === '#/settings'}
+    <m-realworld-settings api={api} user={user} />
+  {:elseif hash === '#/editor'}
+    <m-realworld-article-create />
+  {:elseif hash === '#/article'}
+    <m-realworld-article api={api} user={user} options={options} />
+  {:elseif hash === '#/profile'}
+    <m-realworld-profile api={api} user={user} options={options} />
+  {/if}
+  <m-realworld-footer />`;
+
+  m.css`
+  i {
+    margin-right: 0.2em
+  }`
 
   document.head.innerHTML += `
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Conduit</title>
-    <!-- Import Ionicon icons & Google Fonts our Bootstrap theme relies on -->
-    <link prefetch href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
-    <link prefetch href="//fonts.googleapis.com/css?family=Titillium+Web:700|Source+Serif+Pro:400,700|Merriweather+Sans:400,700|Source+Sans+Pro:400,300,600,700,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
-    <!-- Import the custom Bootstrap 4 theme from our hosted CDN -->
-    <link prefetch rel="stylesheet" href="//demo.productionready.io/main.css">
-  `;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conduit</title>
+  <!-- Import Ionicon icons & Google Fonts our Bootstrap theme relies on -->
+  <link prefetch href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
+  <link prefetch href="//fonts.googleapis.com/css?family=Titillium+Web:700|Source+Serif+Pro:400,700|Merriweather+Sans:400,700|Source+Sans+Pro:400,300,600,700,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
+  <!-- Import the custom Bootstrap 4 theme from our hosted CDN -->
+  <link prefetch rel="stylesheet" href="//demo.productionready.io/main.css">`;
 
   return class {
     api = api;
@@ -148,39 +152,22 @@ mdlr('[html]realworld', m => {
 mdlr('[html]realworld-header', m => {
 
   m.html`
-    <nav class="navbar navbar-light">
-    <div class="container">
-      <a class="navbar-brand" href="#/">conduit</a>
-      <ul class="nav navbar-nav pull-xs-right">
-        <li class="nav-item">
-          <a class="nav-link active" href="#/">Home</a>
-        </li>
-
-        {#if !user}
-          <li class="nav-item">
-            <a class="nav-link" href="#/login">Sign in</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#/register">Sign up</a>
-          </li>
-        {:else}
-          <li class="nav-item">
-            <a class="nav-link" href="#/editor">
-              <i class="ion-compose"></i>New Article
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#/settings">
-              <i class="ion-gear-a"></i>Settings
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#/profile?username={user.username}"><img class="user-pic" src={user.image}>{user.username}</a>
-          </li>
-        {/if}
-      </ul>
-    </div>
-    </nav>`;
+  <nav class="navbar navbar-light">
+  <div class="container">
+    <a class="navbar-brand" href="#/">conduit</a>
+    <ul class="nav navbar-nav pull-xs-right">
+      <li class="nav-item"><a class="nav-link active" href="#/">Home</a></li>
+      {#if !user}
+        <li class="nav-item"><a class="nav-link" href="#/login">Sign in</a></li>
+        <li class="nav-item"><a class="nav-link" href="#/register">Sign up</a></li>
+      {:else}
+        <li class="nav-item"><a class="nav-link" href="#/editor"><i class="ion-compose" />New Article</a></li>
+        <li class="nav-item"><a class="nav-link" href="#/settings"><i class="ion-gear-a" />Settings</a></li>
+        <li class="nav-item"><a class="nav-link" href="#/profile?username={user.username}"><img class="user-pic" src={user.image}>{user.username}</a></li>
+      {/if}
+    </ul>
+  </div>
+  </nav>`;
 
   return class {
     user = null;
@@ -206,125 +193,120 @@ mdlr('[html]realworld-main', m => {
   m.require('[html]realworld-main-tags');
 
   m.html`
-    <div class="home-page">
+  <div class="home-page">
 
-      <div class="banner">
-        <div class="container">
-          <h1 class="logo-font">conduit</h1>
-          <p>A place to share your knowledge.</p>
-        </div>
+    {#if !user}
+    <div class="banner">
+      <div class="container">
+        <h1 class="logo-font">conduit</h1>
+        <p>A place to share your knowledge.</p>
       </div>
+    </div>
+    {/if}
 
-      <div class="container page">
-        <div class="row">
+    <div class="container page">
+      <div class="row">
 
-          <div class="col-md-9">
-            <div class="feed-toggle">
-              <ul class="nav nav-pills outline-active">
-                {#if !!user}
-                <li class="nav-item">
-                  <a class="nav-link {userFeed}" href="#/?username={user.username}">Your Feed</a>
-                </li>
-                {/if}
-                <li class="nav-item">
-                  <a class="nav-link {globalFeed}" href="#/">Global Feed</a>
-                </li>
-                {#if !!options.tag}
-                <li class="nav-item">
-                  <a class="nav-link {tagFeed}" href="#/?tag={options.tag}"># {options.tag}</a>
-                </li>
-                {/if}
-              </ul>
-            </div>
-
-            <m-realworld-main-articles api={api} user={user} options={options} />
+        <div class="col-md-9">
+          <div class="feed-toggle">
+            <ul class="nav nav-pills outline-active">
+              {#if !!user}
+              <li class="nav-item"><a class="nav-link {userFeed}" href="#/?username={user.username}">Your Feed</a></li>
+              {/if}
+              <li class="nav-item"><a class="nav-link {globalFeed}" href="#/">Global Feed</a></li>
+              {#if !!options.tag}
+              <li class="nav-item"><a class="nav-link {tagFeed}" href="#/?tag={options.tag}"># {options.tag}</a></li>
+              {/if}
+            </ul>
           </div>
 
-          <div class="col-md-3">
-            <m-realworld-main-tags api={api} user={user} />
-          </div>
-
+          <m-realworld-main-articles api={api} user={user} options={options} />
         </div>
+
+        <div class="col-md-3">
+          <m-realworld-main-tags api={api} user={user} />
+        </div>
+
       </div>
+    </div>
 
-    </div>`;
+  </div>`;
 
-    return class {
-      api = null;
-      user = null;
-      options = {};
+  return class {
+    api = null;
+    user = null;
+    options = {};
 
-      // todo: there should be an easier method to this
-      get userFeed() {
-        return this.options.username ? 'active' : 'disabled';
-      }
-
-      get globalFeed() {
-        return !this.options.username && !this.options.tag ? 'active' : 'disabled';
-      }
-
-      get tagFeed() {
-        return this.options.tag ? 'active' : 'disabled';
-      }
+    // todo: there should be an easier method to this
+    get userFeed() {
+      return this.options.username ? 'active' : 'disabled';
     }
+
+    get globalFeed() {
+      return !this.options.username && !this.options.tag ? 'active' : 'disabled';
+    }
+
+    get tagFeed() {
+      return this.options.tag ? 'active' : 'disabled';
+    }
+  }
 })
 mdlr('[html]realworld-login', m => {
 
   m.html`
-    <div class="auth-page">
-      <div class="container page">
-        <div class="row">
+  <div class="auth-page">
+    <div class="container page">
+      <div class="row">
 
-          <div class="col-md-6 offset-md-3 col-xs-12">
-            <h1 class="text-xs-center">Sign {mode}</h1>
+        <div class="col-md-6 offset-md-3 col-xs-12">
+          <h1 class="text-xs-center">Sign {mode}</h1>
 
+          {#if mode === 'up'}
+          <p class="text-xs-center">
+            <a href="#/login">Have an account?</a>
+          </p>
+          {:else}
+          <p class="text-xs-center">
+            <a href="#/register">Need an account?</a>
+          </p>
+          {/if}
+
+          <ul class="error-messages">
+            {#if error}
+            <li>{error}</li>
+            {/if}
+          </ul>
+
+          <form method="dialog">
             {#if mode === 'up'}
-            <p class="text-xs-center">
-              <a href="#/login">Have an account?</a>
-            </p>
-            {:else}
-            <p class="text-xs-center">
-              <a href="#/register">Need an account?</a>
-            </p>
+            <fieldset class="form-group">
+              <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name">
+            </fieldset>
             {/if}
 
-            <ul class="error-messages">
-              {#if error}
-              <li>{error}</li>
-              {/if}
-            </ul>
+            <fieldset class="form-group">
+              <input{email} class="form-control form-control-lg" type="text" placeholder="Email">
+            </fieldset>
 
-            <form method="dialog">
-              {#if mode === 'up'}
-              <fieldset class="form-group">
-                <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name">
-              </fieldset>
-              {/if}
+            <fieldset class="form-group">
+              <input{password} class="form-control form-control-lg" type="password" placeholder="Password">
+            </fieldset>
 
-              <fieldset class="form-group">
-                <input{email} class="form-control form-control-lg" type="text" placeholder="Email">
-              </fieldset>
-
-              <fieldset class="form-group">
-                <input{password} class="form-control form-control-lg" type="password" placeholder="Password">
-              </fieldset>
-
-              <button class="btn btn-lg btn-primary pull-xs-right" on={click}>
-                Sign {mode}
-              </button>
-            </form>
-          </div>
-
+            <button class="btn btn-lg btn-primary pull-xs-right" on={click}>
+              Sign {mode}
+            </button>
+          </form>
         </div>
+
       </div>
-    </div>`;
+    </div>
+  </div>`;
 
   m.css`
-    ul {
-      height: 1.5rem;
-      line-height: 1.5rem;
-    }
-  `;
+  ul {
+    height: 1.5rem;
+    line-height: 1.5rem;
+  }`;
 
   return class {
     api = null;
@@ -377,52 +359,53 @@ mdlr('[html]realworld-login', m => {
 })
 mdlr('[html]realworld-settings', m => {
 
-  // todo: implement this
-  
   m.html`
-    <div class="settings-page">
-      <div class="container page">
-        <div class="row">
+  <div class="settings-page">
+    <div class="container page">
+      <div class="row">
 
-          <div class="col-md-6 offset-md-3 col-xs-12">
-            <h1 class="text-xs-center">Your Settings</h1>
+        <div class="col-md-6 offset-md-3 col-xs-12">
+          <h1 class="text-xs-center">Your Settings</h1>
 
-            <form method="dialog">
-              <fieldset>
-                <fieldset class="form-group">
-                  <input class="form-control" type="text" placeholder="URL of profile picture" value={user.image}>
-                </fieldset>
-                <fieldset class="form-group">
-                  <input class="form-control form-control-lg" type="text" placeholder="Your Name" value={user.username}>
-                </fieldset>
-                <fieldset class="form-group">
-                  <textarea class="form-control form-control-lg" rows="8" placeholder="Short bio about you">{user.bio || ''}</textarea>
-                </fieldset>
-                <fieldset class="form-group">
-                  <input class="form-control form-control-lg" type="text" placeholder="Email" value={user.email}>
-                </fieldset>
-                <fieldset class="form-group">
-                  <input class="form-control form-control-lg" type="password" placeholder="Password">
-                </fieldset>
-                <button class="btn btn-lg btn-primary pull-xs-right">
-                  Update Settings
-                </button>
+          <form method="dialog">
+            <fieldset>
+              <fieldset class="form-group">
+                <input{image} class="form-control" type="text" placeholder="URL of profile picture" value={user.image}>
               </fieldset>
-            </form>
-            {#if !!user}
-            <hr>
-            <button class="btn btn-outline-danger" on={click:logout}>
-              Or click here to logout.
-            </button>
-            {/if}
-          </div>
-
+              <fieldset class="form-group">
+                <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name" value={user.username}>
+              </fieldset>
+              <fieldset class="form-group">
+                <textarea{bio} class="form-control form-control-lg" rows="8" placeholder="Short bio about you">{user.bio || ''}</textarea>
+              </fieldset>
+              <fieldset class="form-group">
+                <input{email} class="form-control form-control-lg" type="text" placeholder="Email" value={user.email}>
+              </fieldset>
+              <fieldset class="form-group">
+                <input{password} class="form-control form-control-lg" type="password" placeholder="Password">
+              </fieldset>
+              <button class="btn btn-lg btn-primary pull-xs-right" on={click:update}>
+                Update Settings
+              </button>
+            </fieldset>
+          </form>
+          {#if !!user}
+          <hr>
+          <button class="btn btn-outline-danger" on={click:logout}>
+            Or click here to logout.
+          </button>
+          {/if}
         </div>
+
       </div>
-    </div>`;
+    </div>
+  </div>`;
 
   return class {
+    api = null;
     user = null;
+
+    bio = null;
 
     logout() {
       localStorage.setItem('user', '{}');
@@ -432,6 +415,28 @@ mdlr('[html]realworld-settings', m => {
 
       //m.redirect('#/'); // todo: this would be awesome
     }
+
+    async update() {
+      const records = [
+        ['image', this.image.value, this.user.image !== this.image.value],
+        ['username', this.username.value, this.user.username !== this.username.value ],
+        ['bio', this.bio.value, (this.user.bio || '')!== this.bio.value ],
+        ['email', this.email.value, this.user.email !== this.email.value ],
+        ['password', this.password.value, !!this.password.value ],
+      ];
+
+      const details = records.reduce((a, [key, value, changed]) => {
+        if (changed) a[key] = value;
+        return a;
+      }, {});
+
+      const result = await this.api.updateProfile(this.user, details);
+      Object.assign(this.user, result.user);
+      localStorage.setItem('user', JSON.stringify(result));
+
+      const {hash, href} = window.location;
+      window.location.href = href.replace(hash, '#/');
+    }
   }
 })
 mdlr('[html]realworld-article', m => {
@@ -439,59 +444,49 @@ mdlr('[html]realworld-article', m => {
   m.require('[html]realworld-article-comments');
 
   m.html`
-    <div class="article-page">
+  <div class="article-page">
+    <div class="banner">
+      <div class="container">
+      {#if article}
+        <h1>{article.title}</h1>
+        <m-realworld-article-meta article={article} details={details} />
+      {:else}
+        <h1>...</h1>
+      {/if}
+      </div>
+    </div>
 
-      <div class="banner">
-        <div class="container">
-
-        {#if article}
-          <h1>{article.title}</h1>
-
-          <m-realworld-article-meta article={article} details={details} />
-        {:else}
-          <h1>...</h1>
-        {/if}
+    <div class="container page">
+      {#if article}
+      <div class="row article-content">
+        <div class="col-md-12">
+          <p>{article.body}</p>
+          <ul class="tag-list">
+          {#each tag in article.tagList}
+            <li class="tag-default tag-pill tag-outline">{tag}</li>
+          {/each}
+          </ul>
         </div>
       </div>
-
-      <div class="container page">
-
-        {#if article}
-        <div class="row article-content">
-          <div class="col-md-12">
-            <p>{article.body}</p>
-            <ul class="tag-list">
-            {#each tag in article.tagList}
-              <li class="tag-default tag-pill tag-outline">{tag}</li>
-            {/each}
-            </ul>
-          </div>
-        </div>
-        {:else}
-        <div>loading article...</div>
-        {/if}
-  
-        <hr />
-
-        {#if article}
-        <div class="article-actions">
-          <m-realworld-article-meta article={article} details={details} />
-        </div>
-
-        <div class="row">
-          <m-realworld-article-comments api={api} user={user} options={options} />
-        </div>
-        {/if}
-
+      {:else}
+      <div>loading article...</div>
+      {/if}
+      <hr />
+      {#if article}
+      <div class="article-actions">
+        <m-realworld-article-meta article={article} details={details} />
       </div>
-
-    </div>`;
+      <div class="row">
+        <m-realworld-article-comments api={api} user={user} options={options} />
+      </div>
+      {/if}
+    </div>
+  </div>`;
 
   m.css`
-    button + button {
-      margin-left: 0.4em;
-    }
-  `;
+  button + button {
+    margin-left: 0.4em;
+  }`;
 
   return class {
     api = null;
@@ -514,48 +509,43 @@ mdlr('[html]realworld-article-create', m => {
   // todo: implement this
   
   m.html`
-    <div class="editor-page">
-      <div class="container page">
-        <div class="row">
+  <div class="editor-page">
+    <div class="container page">
+      <div class="row">
 
-          <div class="col-md-10 offset-md-1 col-xs-12">
-            <form>
-              <fieldset>
-                <fieldset class="form-group">
-                  <input type="text" class="form-control form-control-lg" placeholder="Article Title">
-                </fieldset>
-                <fieldset class="form-group">
-                  <input type="text" class="form-control" placeholder="What's this article about?">
-                </fieldset>
-                <fieldset class="form-group">
-                  <textarea class="form-control" rows="8"
-                    placeholder="Write your article (in markdown)"></textarea>
-                </fieldset>
-                <fieldset class="form-group">
-                  <input type="text" class="form-control" placeholder="Enter tags">
-                    <div class="tag-list"></div>
-                </fieldset>
-                <button class="btn btn-lg pull-xs-right btn-primary" type="button">
-                  Publish Article
-                </button>
+        <div class="col-md-10 offset-md-1 col-xs-12">
+          <form>
+            <fieldset>
+              <fieldset class="form-group">
+                <input type="text" class="form-control form-control-lg" placeholder="Article Title">
               </fieldset>
-            </form>
-          </div>
-
+              <fieldset class="form-group">
+                <input type="text" class="form-control" placeholder="What's this article about?">
+              </fieldset>
+              <fieldset class="form-group">
+                <textarea class="form-control" rows="8" placeholder="Write your article (in markdown)" />
+              </fieldset>
+              <fieldset class="form-group">
+                <input type="text" class="form-control" placeholder="Enter tags">
+                <div class="tag-list" />
+              </fieldset>
+              <button class="btn btn-lg pull-xs-right btn-primary" type="button">Publish Article</button>
+            </fieldset>
+          </form>
         </div>
+
       </div>
-    </div>`
+    </div>
+  </div>`
 
 })
 mdlr('[html]realworld-profile', m => {
 
   m.html`
-    <div class="profile-page">
-
+  <div class="profile-page">
     <div class="user-info">
       <div class="container">
         <div class="row">
-
           {#if profile}
           <div class="col-xs-12 col-md-10 offset-md-1">
             <img src="{ profile.image }" class="user-img" />
@@ -566,14 +556,12 @@ mdlr('[html]realworld-profile', m => {
             </button>
           </div>
           {/if}
-
         </div>
       </div>
     </div>
 
     <div class="container">
       <div class="row">
-
         <div class="col-xs-12 col-md-10 offset-md-1">
           <div class="articles-toggle">
             <ul class="nav nav-pills outline-active">
@@ -585,13 +573,10 @@ mdlr('[html]realworld-profile', m => {
               </li>
             </ul>
           </div>
-
           <m-realworld-main-articles api={api} user={user} options={options} />
         </div>
-
       </div>
     </div>
-
   </div>`;
 
   return class {
@@ -617,17 +602,15 @@ mdlr('[unit]api:realworld', m => {
     if (user) {
       headers.authorization = `Token ${user.token}`;
     }
-
     return headers;
   }
+
   return {
 
     login: async (email, password) => {
       const result = await fetch(`https://api.realworld.io/api/users/login`, {
         method: 'post',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({ user: { email, password } })
       }).then(r => r.json());
 
@@ -637,9 +620,7 @@ mdlr('[unit]api:realworld', m => {
     signup: async (email, password, username) => {
       const result = await fetch(`https://api.realworld.io/api/users`, {
         method: 'post',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({ user: { email, password, username } })
       }).then(r => r.json());
 
@@ -687,6 +668,16 @@ mdlr('[unit]api:realworld', m => {
       }).then(r => r.json());
 
       return result.profile;
+    },
+
+    updateProfile: async (user, details) => {
+      const result = await fetch(`https://api.realworld.io/api/user`, {
+        method: 'put',
+        headers: buildHeaders(user),
+        body: JSON.stringify({ user: details })
+      }).then(r => r.json());
+
+      return result;
     },
 
   };
@@ -1048,28 +1039,28 @@ mdlr('[html]realworld-main-articles', m => {
   m.require('[html]realworld-article-meta');
 
   m.html`
-    {#each article in articles}
-      <div class="article-preview">
+  {#each article in articles}
+    <div class="article-preview">
 
-      <m-realworld-article-meta article={article} />
-      <a href="#/article?slug={article.slug}" class="preview-link">
-        <h1>{article.title}</h1>
-        <p>{article.description}</p>
-        <span>Read more...</span>
-        <ul class="tag-list">
-        {#each tag in article.tagList}
-          <li class="tag-default tag-pill tag-outline">{tag}</li>
-        {/each}
-        </ul>
-      </a>
-      </div>
+    <m-realworld-article-meta article={article} />
+    <a href="#/article?slug={article.slug}" class="preview-link">
+      <h1>{article.title}</h1>
+      <p>{article.description}</p>
+      <span>Read more...</span>
+      <ul class="tag-list">
+      {#each tag in article.tagList}
+        <li class="tag-default tag-pill tag-outline">{tag}</li>
+      {/each}
+      </ul>
+    </a>
+    </div>
+  {:else}
+    {#if articles === null}
+    <div class="article-preview">loading articles...</div>
     {:else}
-      {#if articles === null}
-      <div class="article-preview">loading articles...</div>
-      {:else}
-      <div class="article-preview">No articles are here... yet.</div>
-      {/if}
-    {/each}`;
+    <div class="article-preview">No articles are here... yet.</div>
+    {/if}
+  {/each}`;
 
   return class {
     api = null;
@@ -1089,17 +1080,17 @@ mdlr('[html]realworld-main-articles', m => {
 mdlr('[html]realworld-main-tags', m => {
 
   m.html`
-    <div class="sidebar">
-      <p>Popular Tags</p>
+  <div class="sidebar">
+    <p>Popular Tags</p>
 
-      <div class="tag-list">
-      {#each tag in tags}
-        <a href="#/?tag={tag}" class="tag-pill tag-default">{tag}</a>
-      {:else}
-        <span>loading tags...</span>
-      {/each}
-      </div>
-    </div>`;
+    <div class="tag-list">
+    {#each tag in tags}
+      <a href="#/?tag={tag}" class="tag-pill tag-default">{tag}</a>
+    {:else}
+      <span>loading tags...</span>
+    {/each}
+    </div>
+  </div>`;
 
   return class {
     api = null;
@@ -1116,43 +1107,41 @@ mdlr('[html]realworld-main-tags', m => {
 mdlr('[html]realworld-article-comments', m => {
 
   m.html`
-    <div class="col-xs-12 col-md-8 offset-md-2">
+  <div class="col-xs-12 col-md-8 offset-md-2">
 
-      {#if !!user}
-      <form class="card comment-form">
-        <div class="card-block">
-          <textarea class="form-control" placeholder="Write a comment..." rows="3"></textarea>
-        </div>
-        <div class="card-footer">
-          <img src="{user.image}" class="comment-author-img" />
-          <button class="btn btn-sm btn-primary">
-            Post Comment
-          </button>
-        </div>
-      </form>
-      {/if}
-
-      {#each comment in comments}
-      <div class="card">
-        <div class="card-block">
-          <p class="card-text">{ comment.body }</p>
-        </div>
-        <div class="card-footer">
-          <a href="#/profile" class="comment-author">
-            <img src="{ comment.author.image }" class="comment-author-img" />
-          </a>
-          <a href="#/profile" class="comment-author">{ comment.author.username }</a>
-          <span class="date-posted">{ formatDate(comment) }</span>
-        </div>
+    {#if !!user}
+    <form class="card comment-form">
+      <div class="card-block">
+        <textarea class="form-control" placeholder="Write a comment..." rows="3" />
       </div>
-      {/each}
+      <div class="card-footer">
+        <img src="{user.image}" class="comment-author-img" />
+        <button class="btn btn-sm btn-primary">Post Comment</button>
+      </div>
+    </form>
+    {/if}
 
-    </div>`;
+    {#each comment in comments}
+    <div class="card">
+      <div class="card-block">
+        <p class="card-text">{comment.body}</p>
+      </div>
+      <div class="card-footer">
+        <a href="#/profile" class="comment-author">
+          <img src="{comment.author.image}" class="comment-author-img" />
+        </a>
+        <a href="#/profile" class="comment-author">{comment.author.username}</a>
+        <span class="date-posted">{formatDate(comment)}</span>
+      </div>
+    </div>
+    {/each}
+
+  </div>`;
 
   m.css`
-    :root {
-      display: contents;
-    }`;
+  :root {
+    display: contents;
+  }`;
 
   return class {
     api = null;
@@ -1272,25 +1261,25 @@ mdlr('[unit]object-tree', m => {
 mdlr('[html]realworld-article-meta', m => {
 
   m.html`
-    <div class="article-meta">
-      <a href="#/profile"><img src="{ article.author.image }" /></a>
-      <div class="info">
-        <a href="#/profile?username={ article.author.username }" class="author">{ article.author.username }</a>
-        <span class="date">{ formatDate() }</span>
-      </div>
-      {#if !details}
-      <button class="btn {buttonClass} btn-sm pull-xs-right">
-        <i class="ion-heart" />{ article.favoritesCount }
-      </button>
-      {:else}
-      <button class="btn btn-sm btn-outline-secondary">
-        <i class="ion-plus-round" />Follow {article.author.username} <span class="counter">(10)</span>
-      </button>
-      <button class="btn btn-sm {buttonClass}">
-        <i class="ion-heart" />{favorited} Post <span class="counter">({article.favoritesCount})</span>
-      </button>
-      {/if}
-    </div>`;
+  <div class="article-meta">
+    <a href="#/profile?username={article.author.username}"><img src="{article.author.image}" /></a>
+    <div class="info">
+      <a href="#/profile?username={article.author.username}" class="author">{article.author.username}</a>
+      <span class="date">{formatDate()}</span>
+    </div>
+    {#if !details}
+    <button class="btn {buttonClass} btn-sm pull-xs-right">
+      <i class="ion-heart" />{article.favoritesCount}
+    </button>
+    {:else}
+    <button class="btn btn-sm btn-outline-secondary">
+      <i class="ion-plus-round" />Follow {article.author.username}<span class="counter">(10)</span>
+    </button>
+    <button class="btn btn-sm {buttonClass}">
+      <i class="ion-heart" />{favorited} Post <span class="counter">({article.favoritesCount})</span>
+    </button>
+    {/if}
+  </div>`;
 
   return class {
     article = null;
