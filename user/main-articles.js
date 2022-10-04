@@ -32,7 +32,6 @@ mdlr('[html]realworld-main-articles', m => {
     options = null;
 
     articles = null;
-    feed = 'global';
 
     async connected() {
       this.articles = await this.api.getArticles(this.user, this.options);
