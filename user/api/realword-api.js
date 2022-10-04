@@ -55,21 +55,17 @@ mdlr('api:realworld', m => {
       return result.article;
     },
 
-    getArticleComments: async (slug) => {
-      const result = await fetch(`https://api.realworld.io/api/articles/${slug}/comments`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    getArticleComments: async (user, options) => {
+      const result = await fetch(`https://api.realworld.io/api/articles/${options.slug}/comments`, {
+        headers: buildHeaders(user)
       }).then(r => r.json());
 
       return result.comments;
     },
 
-    getTags: async () => {
+    getTags: async (user, options) => {
       const result = await fetch(`https://api.realworld.io/api/tags`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: buildHeaders(user)
       }).then(r => r.json());
 
       return result.tags;

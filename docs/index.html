@@ -238,11 +238,10 @@ mdlr('[html]realworld-main', m => {
             </div>
 
             <m-realworld-main-articles api={api} user={user} options={options} />
-
           </div>
 
           <div class="col-md-3">
-            <m-realworld-main-tags api={api} />
+            <m-realworld-main-tags api={api} user={user} />
           </div>
 
         </div>
@@ -588,7 +587,6 @@ mdlr('[html]realworld-profile', m => {
           </div>
 
           <m-realworld-main-articles api={api} user={user} options={options} />
-
         </div>
 
       </div>
@@ -604,7 +602,6 @@ mdlr('[html]realworld-profile', m => {
 
     async connected() {
       this.profile = await this.api.getProfile(this.user, this.options);
-      console.log('#profile:', this.options)
 
       m.redraw(this);
     }
@@ -668,21 +665,17 @@ mdlr('[unit]api:realworld', m => {
       return result.article;
     },
 
-    getArticleComments: async (slug) => {
-      const result = await fetch(`https://api.realworld.io/api/articles/${slug}/comments`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    getArticleComments: async (user, options) => {
+      const result = await fetch(`https://api.realworld.io/api/articles/${options.slug}/comments`, {
+        headers: buildHeaders(user)
       }).then(r => r.json());
 
       return result.comments;
     },
 
-    getTags: async () => {
+    getTags: async (user, options) => {
       const result = await fetch(`https://api.realworld.io/api/tags`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: buildHeaders(user)
       }).then(r => r.json());
 
       return result.tags;
@@ -1110,10 +1103,11 @@ mdlr('[html]realworld-main-tags', m => {
 
   return class {
     api = null;
+    user = null;
     tags = [];
 
     async connected() {
-      this.tags = await this.api.getTags();
+      this.tags = await this.api.getTags(this.user);
 
       m.redraw(this);
     }
@@ -1168,7 +1162,7 @@ mdlr('[html]realworld-article-comments', m => {
     comments = null;
 
     async connected() {
-      this.comments = await this.api.getArticleComments(this.options.slug);
+      this.comments = await this.api.getArticleComments(this.user, this.options);
 
       m.redraw(this);
     }
@@ -1285,14 +1279,14 @@ mdlr('[html]realworld-article-meta', m => {
         <span class="date">{ formatDate() }</span>
       </div>
       {#if !details}
-      <button class="btn btn-outline-primary btn-sm pull-xs-right">
+      <button class="btn {buttonClass} btn-sm pull-xs-right">
         <i class="ion-heart" />{ article.favoritesCount }
       </button>
       {:else}
       <button class="btn btn-sm btn-outline-secondary">
         <i class="ion-plus-round" />Follow {article.author.username} <span class="counter">(10)</span>
       </button>
-      <button class="btn btn-sm btn-outline-primary">
+      <button class="btn btn-sm {buttonClass}">
         <i class="ion-heart" />{favorited} Post <span class="counter">({article.favoritesCount})</span>
       </button>
       {/if}
@@ -1301,6 +1295,10 @@ mdlr('[html]realworld-article-meta', m => {
   return class {
     article = null;
     details = false;
+
+    get buttonClass() {
+      return this.article?.favorited ? 'btn-primary' : 'btn-outline-primary';
+    }
 
     get favorited() {
       return !this.article?.favorited ? 'Favorite' : 'Unfavorite';

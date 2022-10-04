@@ -8,14 +8,14 @@ mdlr('[html]realworld-article-meta', m => {
         <span class="date">{ formatDate() }</span>
       </div>
       {#if !details}
-      <button class="btn btn-outline-primary btn-sm pull-xs-right">
+      <button class="btn {buttonClass} btn-sm pull-xs-right">
         <i class="ion-heart" />{ article.favoritesCount }
       </button>
       {:else}
       <button class="btn btn-sm btn-outline-secondary">
         <i class="ion-plus-round" />Follow {article.author.username} <span class="counter">(10)</span>
       </button>
-      <button class="btn btn-sm btn-outline-primary">
+      <button class="btn btn-sm {buttonClass}">
         <i class="ion-heart" />{favorited} Post <span class="counter">({article.favoritesCount})</span>
       </button>
       {/if}
@@ -24,6 +24,10 @@ mdlr('[html]realworld-article-meta', m => {
   return class {
     article = null;
     details = false;
+
+    get buttonClass() {
+      return this.article?.favorited ? 'btn-primary' : 'btn-outline-primary';
+    }
 
     get favorited() {
       return !this.article?.favorited ? 'Favorite' : 'Unfavorite';

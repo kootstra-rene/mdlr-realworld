@@ -15,10 +15,11 @@ mdlr('[html]realworld-main-tags', m => {
 
   return class {
     api = null;
+    user = null;
     tags = [];
 
     async connected() {
-      this.tags = await this.api.getTags();
+      this.tags = await this.api.getTags(this.user);
 
       m.redraw(this);
     }
