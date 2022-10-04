@@ -29,7 +29,7 @@ mdlr('api:realworld', m => {
         body: JSON.stringify({ user: { email, password, username } })
       }).then(r => r.json());
 
-      return result; // todo: change to result.user
+      return result;
     },
 
     getArticles: async (user, options) => {
@@ -45,6 +45,15 @@ mdlr('api:realworld', m => {
 
     getArticle: async (user, options) => {
       const result = await fetch(`https://api.realworld.io/api/articles/${options.slug}`, {
+        headers: buildHeaders(user)
+      }).then(r => r.json());
+
+      return result.article;
+    },
+
+    favoriteArticle: async (user, options, favorite) => {
+      const result = await fetch(`https://api.realworld.io/api/articles/${options.slug}/favorite`, {
+        method: favorite ? 'post' : 'delete',
         headers: buildHeaders(user)
       }).then(r => r.json());
 

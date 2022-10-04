@@ -8,24 +8,36 @@ mdlr('[html]realworld-article-meta', m => {
       <span class="date">{formatDate()}</span>
     </div>
     {#if !details}
-    <button class="btn {buttonClass} btn-sm pull-xs-right">
+    <button class="btn {favoriteClass} btn-sm pull-xs-right">
       <i class="ion-heart" />{article.favoritesCount}
     </button>
     {:else}
-    <button class="btn btn-sm btn-outline-secondary">
-      <i class="ion-plus-round" />Follow {article.author.username}<span class="counter">(10)</span>
+    <button class="btn btn-sm {followClass}" on={click:followClick}>
+      <i class="ion-plus-round" />{following} {article.author.username}
     </button>
-    <button class="btn btn-sm {buttonClass}">
-      <i class="ion-heart" />{favorited} Post <span class="counter">({article.favoritesCount})</span>
+    <button class="btn btn-sm {favoriteClass}" on={click:favoriteClick}>
+      <i class="ion-heart" />{favorited} Article <span class="counter">({article.favoritesCount})</span>
     </button>
     {/if}
   </div>`;
 
   return class {
+    api = null;
+    user = null;
+    options = null;
+
     article = null;
     details = false;
 
-    get buttonClass() {
+    get followClass() {
+      return this.article?.author?.following ? 'btn-secondary' : 'btn-outline-secondary';
+    }
+
+    get following() {
+      return !this.article?.author?.following ? 'Follow' : 'Unfollow';
+    }
+
+    get favoriteClass() {
       return this.article?.favorited ? 'btn-primary' : 'btn-outline-primary';
     }
 
@@ -37,6 +49,19 @@ mdlr('[html]realworld-article-meta', m => {
       const options = { month: 'long', day: 'numeric', year: 'numeric' };
 
       return new Intl.DateTimeFormat('en-US', options).format(new Date(this.article?.updatedAt || '1970-01-01'));
+    }
+
+    async favoriteClick(e) {
+      const result = await this.api.favoriteArticle(this.user, this.options, !this.article?.favorited);
+      delete result.favoritedBy;
+      Object.assign(this.article, result);
+
+      const {hash, href} = window.location;
+      window.location.href = href.replace(hash, `#/article?slug=${this.article.slug}&t=${Date.now()}`);
+    }
+
+    followClick(e) {
+      console.log('followClick', this.article?.author?.following);
     }
   }
 
