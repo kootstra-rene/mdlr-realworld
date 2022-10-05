@@ -8,7 +8,7 @@ mdlr('[html]realworld-article-meta', m => {
       <span class="date">{formatDate()}</span>
     </div>
     {#if !details}
-    <button class="btn {favoriteClass} btn-sm pull-xs-right">
+    <button class="btn {favoriteClass} btn-sm pull-xs-right" on={click:favoriteClick}>
       <i class="ion-heart" />{article.favoritesCount}
     </button>
     {:else}
@@ -52,10 +52,12 @@ mdlr('[html]realworld-article-meta', m => {
     }
 
     async favoriteClick(e) {
+      this.options.slug = this.article?.slug;
       const result = await this.api.favoriteArticle(this.user, this.options, !this.article?.favorited);
       delete result.favoritedBy;
       Object.assign(this.article, result);
 
+      // todo: how to redraw this
       const {hash, href} = window.location;
       window.location.href = href.replace(hash, `#/article?slug=${this.article.slug}&t=${Date.now()}`);
     }

@@ -64,7 +64,7 @@ globalThis.mdlr = (() => {
   }
 
 })()
-mdlr('[html]realworld', m => {
+mdlr('[html]realworld-app', m => {
 
   m.require('[html]realworld-header');
   m.require('[html]realworld-footer');
@@ -78,23 +78,23 @@ mdlr('[html]realworld', m => {
   const api = m.require('api:realworld');
 
   m.html`
-  <m-realworld-header user={user} />
+  <realworld-header user={user} />
   {#if hash === '#/'}
-    <m-realworld-main api={api} user={user} options={options} />
+    <realworld-main api={api} user={user} options={options} />
   {:elseif hash === '#/login'}
-    <m-realworld-login api={api} mode="{'in'}" />
+    <realworld-login api={api} mode="{'in'}" />
   {:elseif hash === '#/register'}
-    <m-realworld-login api={api} mode="{'up'}"/>
+    <realworld-login api={api} mode="{'up'}"/>
   {:elseif hash === '#/settings'}
-    <m-realworld-settings api={api} user={user} />
+    <realworld-settings api={api} user={user} />
   {:elseif hash === '#/editor'}
-    <m-realworld-article-create />
+    <realworld-article-create />
   {:elseif hash === '#/article'}
-    <m-realworld-article api={api} user={user} options={options} />
+    <realworld-article api={api} user={user} options={options} />
   {:elseif hash === '#/profile'}
-    <m-realworld-profile api={api} user={user} options={options} />
+    <realworld-profile api={api} user={user} options={options} />
   {/if}
-  <m-realworld-footer />`;
+  <realworld-footer />`;
 
   m.css`
   i {
@@ -220,11 +220,11 @@ mdlr('[html]realworld-main', m => {
             </ul>
           </div>
 
-          <m-realworld-main-articles api={api} user={user} options={options} />
+          <realworld-main-articles api={api} user={user} options={options} />
         </div>
 
         <div class="col-md-3">
-          <m-realworld-main-tags api={api} user={user} />
+          <realworld-main-tags api={api} user={user} />
         </div>
 
       </div>
@@ -449,7 +449,7 @@ mdlr('[html]realworld-article', m => {
       <div class="container">
       {#if article}
         <h1>{article.title}</h1>
-        <m-realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
+        <realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
       {:else}
         <h1>...</h1>
       {/if}
@@ -474,10 +474,10 @@ mdlr('[html]realworld-article', m => {
       <hr />
       {#if article}
       <div class="article-actions">
-        <m-realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
+        <realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
       </div>
       <div class="row">
-        <m-realworld-article-comments api={api} user={user} options={options} />
+        <realworld-article-comments api={api} user={user} options={options} />
       </div>
       {/if}
     </div>
@@ -573,7 +573,7 @@ mdlr('[html]realworld-profile', m => {
               </li>
             </ul>
           </div>
-          <m-realworld-main-articles api={api} user={user} options={options} />
+          <realworld-main-articles api={api} user={user} options={options} />
         </div>
       </div>
     </div>
@@ -652,6 +652,7 @@ mdlr('[unit]api:realworld', m => {
         headers: buildHeaders(user)
       }).then(r => r.json());
 
+      if (!result.article) console.log(result)
       return result.article;
     },
 
@@ -844,6 +845,7 @@ mdlr('[mdlr]html-loader', m => {
     body += '}';
 
     return {
+      id: objectTree.node.name,
       create: new Function('customElement', body)(customElement),
     }
   }
@@ -887,6 +889,7 @@ mdlr('[mdlr]html-loader', m => {
       }
 
       registerNode(node, vars, state, text) {
+        vars = vars.filter(a => a !== 'state');
         const converter = new Function('state', `{${vars.join(', ')}}`, `return \`${text}\``);
 
         const map = this.updateMap;
@@ -898,6 +901,7 @@ mdlr('[mdlr]html-loader', m => {
       }
 
       registerNodeAttribute(node, vars, state, key, text) {
+        vars = vars.filter(a => a !== 'state');
         const converter = new Function('state', `{${vars.join(', ')}}`, `return \`${text}\``);
 
         const map = this.updateMap;
@@ -962,6 +966,10 @@ mdlr('[mdlr]html-loader', m => {
     for (let token of tokenizer(content)) {
       switch (token.type) {
         case OPEN:
+          if (token.id.indexOf('m-') === 0) {
+            console.warn(`${token.id} should remove the m- prefix`);
+            token.id = token.id.slice(2);
+          }
           elementRegEx.lastIndex = 0;
           const { groups: g } = elementRegEx.exec(token.id);
           record = { type: g.id, key: g.member !== '' ? g.member : g.id, attributes: [], events: [], xmlns: xmlns[xmlns.length - 1] };
@@ -1025,8 +1033,8 @@ mdlr('[mdlr]html-loader', m => {
   }
 
   m.$('loader').set('html', (info, context) => {
-    const name = info.n.replace('[html]', 'm-');
-    if (m.$('modules').get(name)) return;
+    const name = info.n.replace('[html]', '');
+    if (builders.has(name)) return;
 
     const options = { code: {} };
 
@@ -1051,7 +1059,7 @@ mdlr('[html]realworld-main-articles', m => {
   {#each article in articles}
     <div class="article-preview">
 
-    <m-realworld-article-meta article={article} />
+    <realworld-article-meta article={article} api={api} user={user} options={options} />
     <a href="#/article?slug={article.slug}" class="preview-link">
       <h1>{article.title}</h1>
       <p>{article.description}</p>
@@ -1277,7 +1285,7 @@ mdlr('[html]realworld-article-meta', m => {
       <span class="date">{formatDate()}</span>
     </div>
     {#if !details}
-    <button class="btn {favoriteClass} btn-sm pull-xs-right">
+    <button class="btn {favoriteClass} btn-sm pull-xs-right" on={click:favoriteClick}>
       <i class="ion-heart" />{article.favoritesCount}
     </button>
     {:else}
@@ -1321,10 +1329,12 @@ mdlr('[html]realworld-article-meta', m => {
     }
 
     async favoriteClick(e) {
+      this.options.slug = this.article?.slug;
       const result = await this.api.favoriteArticle(this.user, this.options, !this.article?.favorited);
       delete result.favoritedBy;
       Object.assign(this.article, result);
 
+      // todo: how to redraw this
       const {hash, href} = window.location;
       window.location.href = href.replace(hash, `#/article?slug=${this.article.slug}&t=${Date.now()}`);
     }
@@ -1336,4 +1346,4 @@ mdlr('[html]realworld-article-meta', m => {
 
 })
 mdlr('[mdlr]html-loader');
-mdlr('[html]realworld'); document.body.innerHTML = '<m-realworld></m-realworld>';</script></body></html>
+mdlr('[html]realworld-app'); document.body.innerHTML = '<realworld-app></realworld-app>';</script></body></html>

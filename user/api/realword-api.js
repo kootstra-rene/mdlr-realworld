@@ -57,6 +57,7 @@ mdlr('api:realworld', m => {
         headers: buildHeaders(user)
       }).then(r => r.json());
 
+      if (!result.article) console.log(result)
       return result.article;
     },
 

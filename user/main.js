@@ -31,11 +31,11 @@ mdlr('[html]realworld-main', m => {
             </ul>
           </div>
 
-          <m-realworld-main-articles api={api} user={user} options={options} />
+          <realworld-main-articles api={api} user={user} options={options} />
         </div>
 
         <div class="col-md-3">
-          <m-realworld-main-tags api={api} user={user} />
+          <realworld-main-tags api={api} user={user} />
         </div>
 
       </div>

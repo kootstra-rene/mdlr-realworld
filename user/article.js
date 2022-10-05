@@ -8,7 +8,7 @@ mdlr('[html]realworld-article', m => {
       <div class="container">
       {#if article}
         <h1>{article.title}</h1>
-        <m-realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
+        <realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
       {:else}
         <h1>...</h1>
       {/if}
@@ -33,10 +33,10 @@ mdlr('[html]realworld-article', m => {
       <hr />
       {#if article}
       <div class="article-actions">
-        <m-realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
+        <realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
       </div>
       <div class="row">
-        <m-realworld-article-comments api={api} user={user} options={options} />
+        <realworld-article-comments api={api} user={user} options={options} />
       </div>
       {/if}
     </div>

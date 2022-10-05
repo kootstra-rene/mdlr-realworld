@@ -1,4 +1,4 @@
-mdlr('[html]realworld', m => {
+mdlr('[html]realworld-app', m => {
 
   m.require('[html]realworld-header');
   m.require('[html]realworld-footer');
@@ -12,23 +12,23 @@ mdlr('[html]realworld', m => {
   const api = m.require('api:realworld');
 
   m.html`
-  <m-realworld-header user={user} />
+  <realworld-header user={user} />
   {#if hash === '#/'}
-    <m-realworld-main api={api} user={user} options={options} />
+    <realworld-main api={api} user={user} options={options} />
   {:elseif hash === '#/login'}
-    <m-realworld-login api={api} mode="{'in'}" />
+    <realworld-login api={api} mode="{'in'}" />
   {:elseif hash === '#/register'}
-    <m-realworld-login api={api} mode="{'up'}"/>
+    <realworld-login api={api} mode="{'up'}"/>
   {:elseif hash === '#/settings'}
-    <m-realworld-settings api={api} user={user} />
+    <realworld-settings api={api} user={user} />
   {:elseif hash === '#/editor'}
-    <m-realworld-article-create />
+    <realworld-article-create />
   {:elseif hash === '#/article'}
-    <m-realworld-article api={api} user={user} options={options} />
+    <realworld-article api={api} user={user} options={options} />
   {:elseif hash === '#/profile'}
-    <m-realworld-profile api={api} user={user} options={options} />
+    <realworld-profile api={api} user={user} options={options} />
   {/if}
-  <m-realworld-footer />`;
+  <realworld-footer />`;
 
   m.css`
   i {

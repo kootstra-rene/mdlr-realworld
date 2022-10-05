@@ -32,7 +32,7 @@ mdlr('[html]realworld-profile', m => {
               </li>
             </ul>
           </div>
-          <m-realworld-main-articles api={api} user={user} options={options} />
+          <realworld-main-articles api={api} user={user} options={options} />
         </div>
       </div>
     </div>
