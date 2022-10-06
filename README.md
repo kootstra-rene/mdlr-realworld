@@ -6,7 +6,7 @@ I have been experimenting with building my own 'framework' for a while now. The 
 
 # getting started
 1) docker-compose up
-2) open [realworld-dev](https://localhost:8443/bundler/html?unit=[html]realworld) in browser
+2) open [realworld-dev](https://localhost:8443/bundler/html?unit=[html]realworld-app) in browser
 
 # pages
 
