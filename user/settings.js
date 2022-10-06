@@ -51,10 +51,7 @@ mdlr('[html]realworld-settings', m => {
     logout() {
       localStorage.setItem('user', '{}');
 
-      const {hash, href} = window.location;
-      window.location.href = href.replace(hash, '#/');
-
-      //m.redirect('#/'); // todo: this would be awesome
+      m.redirect('#/');
     }
 
     async update() {
@@ -75,8 +72,7 @@ mdlr('[html]realworld-settings', m => {
       Object.assign(this.user, result.user);
       localStorage.setItem('user', JSON.stringify(result));
 
-      const {hash, href} = window.location;
-      window.location.href = href.replace(hash, '#/');
+      m.redirect('#/');
     }
   }
 })

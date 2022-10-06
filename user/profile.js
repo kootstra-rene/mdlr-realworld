@@ -1,5 +1,7 @@
 mdlr('[html]realworld-profile', m => {
 
+  m.require('[html]realworld-main-articles');
+
   m.html`
   <div class="profile-page">
     <div class="user-info">
@@ -32,7 +34,7 @@ mdlr('[html]realworld-profile', m => {
               </li>
             </ul>
           </div>
-          <realworld-main-articles api={api} user={user} options={options} />
+          <realworld-main-articles{=} />
         </div>
       </div>
     </div>

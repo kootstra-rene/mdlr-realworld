@@ -1,6 +1,7 @@
 mdlr('[html]realworld-article', m => {
 
   m.require('[html]realworld-article-comments');
+  m.require('[html]realworld-article-meta');
 
   m.html`
   <div class="article-page">
@@ -8,7 +9,7 @@ mdlr('[html]realworld-article', m => {
       <div class="container">
       {#if article}
         <h1>{article.title}</h1>
-        <realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
+        <realworld-article-meta{=} />
       {:else}
         <h1>...</h1>
       {/if}
@@ -33,10 +34,10 @@ mdlr('[html]realworld-article', m => {
       <hr />
       {#if article}
       <div class="article-actions">
-        <realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
+        <realworld-article-meta{=} />
       </div>
       <div class="row">
-        <realworld-article-comments api={api} user={user} options={options} />
+        <realworld-article-comments{=} />
       </div>
       {/if}
     </div>

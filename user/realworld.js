@@ -1,32 +1,32 @@
 mdlr('[html]realworld-app', m => {
 
   m.require('[html]realworld-header');
-  m.require('[html]realworld-footer');
   m.require('[html]realworld-main');
   m.require('[html]realworld-login');
   m.require('[html]realworld-settings');
   m.require('[html]realworld-article');
   m.require('[html]realworld-article-create');
   m.require('[html]realworld-profile');
+  m.require('[html]realworld-footer');
 
   const api = m.require('api:realworld');
 
   m.html`
   <realworld-header user={user} />
   {#if hash === '#/'}
-    <realworld-main api={api} user={user} options={options} />
+    <realworld-main{=} />
   {:elseif hash === '#/login'}
-    <realworld-login api={api} mode="{'in'}" />
+    <realworld-login{=} mode="{'in'}" />
   {:elseif hash === '#/register'}
-    <realworld-login api={api} mode="{'up'}"/>
+    <realworld-login{=} mode="{'up'}"/>
   {:elseif hash === '#/settings'}
-    <realworld-settings api={api} user={user} />
+    <realworld-settings{=} />
   {:elseif hash === '#/editor'}
-    <realworld-article-create />
+    <realworld-article-create{=} />
   {:elseif hash === '#/article'}
-    <realworld-article api={api} user={user} options={options} />
+    <realworld-article{=} />
   {:elseif hash === '#/profile'}
-    <realworld-profile api={api} user={user} options={options} />
+    <realworld-profile{=} />
   {/if}
   <realworld-footer />`;
 
@@ -54,7 +54,7 @@ mdlr('[html]realworld-app', m => {
     constructor() {
       this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
 
-      this.route(window.location.href);
+      this.router(window.location.href);
     }
 
     connected() {
@@ -63,12 +63,12 @@ mdlr('[html]realworld-app', m => {
         // todo: put user info in seperate module
         this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
 
-        this.route(e.newURL);
+        this.router(e.newURL);
         m.redraw(this);
       });
     }
 
-    route(newURL) {
+    router(newURL) {
       const url = new URL(newURL);
       const [hash, search] = url.hash.split('?');
 

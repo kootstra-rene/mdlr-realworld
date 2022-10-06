@@ -67,32 +67,32 @@ globalThis.mdlr = (() => {
 mdlr('[html]realworld-app', m => {
 
   m.require('[html]realworld-header');
-  m.require('[html]realworld-footer');
   m.require('[html]realworld-main');
   m.require('[html]realworld-login');
   m.require('[html]realworld-settings');
   m.require('[html]realworld-article');
   m.require('[html]realworld-article-create');
   m.require('[html]realworld-profile');
+  m.require('[html]realworld-footer');
 
   const api = m.require('api:realworld');
 
   m.html`
   <realworld-header user={user} />
   {#if hash === '#/'}
-    <realworld-main api={api} user={user} options={options} />
+    <realworld-main{=} />
   {:elseif hash === '#/login'}
-    <realworld-login api={api} mode="{'in'}" />
+    <realworld-login{=} mode="{'in'}" />
   {:elseif hash === '#/register'}
-    <realworld-login api={api} mode="{'up'}"/>
+    <realworld-login{=} mode="{'up'}"/>
   {:elseif hash === '#/settings'}
-    <realworld-settings api={api} user={user} />
+    <realworld-settings{=} />
   {:elseif hash === '#/editor'}
-    <realworld-article-create />
+    <realworld-article-create{=} />
   {:elseif hash === '#/article'}
-    <realworld-article api={api} user={user} options={options} />
+    <realworld-article{=} />
   {:elseif hash === '#/profile'}
-    <realworld-profile api={api} user={user} options={options} />
+    <realworld-profile{=} />
   {/if}
   <realworld-footer />`;
 
@@ -120,7 +120,7 @@ mdlr('[html]realworld-app', m => {
     constructor() {
       this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
 
-      this.route(window.location.href);
+      this.router(window.location.href);
     }
 
     connected() {
@@ -129,12 +129,12 @@ mdlr('[html]realworld-app', m => {
         // todo: put user info in seperate module
         this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
 
-        this.route(e.newURL);
+        this.router(e.newURL);
         m.redraw(this);
       });
     }
 
-    route(newURL) {
+    router(newURL) {
       const url = new URL(newURL);
       const [hash, search] = url.hash.split('?');
 
@@ -174,19 +174,6 @@ mdlr('[html]realworld-header', m => {
   }
 
 })
-mdlr('[html]realworld-footer', m => {
-
-  m.html`
-  <footer>
-    <div class="container">
-      <a href="#/" class="logo-font">conduit</a>
-      <span class="attribution">
-        An interactive learning project from <a href="https://thinkster.io">Thinkster</a>. Code & design licensed under MIT.
-      </span>
-    </div>
-  </footer>`;
-
-})
 mdlr('[html]realworld-main', m => {
 
   m.require('[html]realworld-main-articles');
@@ -220,11 +207,11 @@ mdlr('[html]realworld-main', m => {
             </ul>
           </div>
 
-          <realworld-main-articles api={api} user={user} options={options} />
+          <realworld-main-articles{=} />
         </div>
 
         <div class="col-md-3">
-          <realworld-main-tags api={api} user={user} />
+          <realworld-main-tags{=} />
         </div>
 
       </div>
@@ -348,10 +335,7 @@ mdlr('[html]realworld-login', m => {
 
       localStorage.setItem('user', JSON.stringify(result)); // Q: whos responsibility is this?
 
-      const {hash, href} = window.location;
-      window.location.href = href.replace(hash, '#/');
-
-      //m.redirect('#/'); // todo: this would be awesome
+      m.redirect('#/');
     }
 
   };
@@ -410,10 +394,7 @@ mdlr('[html]realworld-settings', m => {
     logout() {
       localStorage.setItem('user', '{}');
 
-      const {hash, href} = window.location;
-      window.location.href = href.replace(hash, '#/');
-
-      //m.redirect('#/'); // todo: this would be awesome
+      m.redirect('#/');
     }
 
     async update() {
@@ -434,14 +415,14 @@ mdlr('[html]realworld-settings', m => {
       Object.assign(this.user, result.user);
       localStorage.setItem('user', JSON.stringify(result));
 
-      const {hash, href} = window.location;
-      window.location.href = href.replace(hash, '#/');
+      m.redirect('#/');
     }
   }
 })
 mdlr('[html]realworld-article', m => {
 
   m.require('[html]realworld-article-comments');
+  m.require('[html]realworld-article-meta');
 
   m.html`
   <div class="article-page">
@@ -449,7 +430,7 @@ mdlr('[html]realworld-article', m => {
       <div class="container">
       {#if article}
         <h1>{article.title}</h1>
-        <realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
+        <realworld-article-meta{=} />
       {:else}
         <h1>...</h1>
       {/if}
@@ -474,10 +455,10 @@ mdlr('[html]realworld-article', m => {
       <hr />
       {#if article}
       <div class="article-actions">
-        <realworld-article-meta api={api} user={user} options={options} article={article} details={details} />
+        <realworld-article-meta{=} />
       </div>
       <div class="row">
-        <realworld-article-comments api={api} user={user} options={options} />
+        <realworld-article-comments{=} />
       </div>
       {/if}
     </div>
@@ -541,6 +522,8 @@ mdlr('[html]realworld-article-create', m => {
 })
 mdlr('[html]realworld-profile', m => {
 
+  m.require('[html]realworld-main-articles');
+
   m.html`
   <div class="profile-page">
     <div class="user-info">
@@ -573,7 +556,7 @@ mdlr('[html]realworld-profile', m => {
               </li>
             </ul>
           </div>
-          <realworld-main-articles api={api} user={user} options={options} />
+          <realworld-main-articles{=} />
         </div>
       </div>
     </div>
@@ -591,6 +574,19 @@ mdlr('[html]realworld-profile', m => {
       m.redraw(this);
     }
   }
+
+})
+mdlr('[html]realworld-footer', m => {
+
+  m.html`
+  <footer>
+    <div class="container">
+      <a href="#/" class="logo-font">conduit</a>
+      <span class="attribution">
+        An interactive learning project from <a href="https://thinkster.io">Thinkster</a>. Code & design licensed under MIT.
+      </span>
+    </div>
+  </footer>`;
 
 })
 mdlr('[unit]api:realworld', m => {
@@ -699,6 +695,7 @@ mdlr('[mdlr]html-loader', m => {
   const { ObjectTree } = m.require('object-tree');
 
   const builders = new Map;
+  const builderKeys = new Map;
 
   function compileChildren(keys, objectTree, state, level) {
     if (!objectTree.list?.length) return '';
@@ -752,12 +749,20 @@ mdlr('[mdlr]html-loader', m => {
           body += `${indent}n${level - 1}.appendChild(n${level});\n`;
           break;
         default: {
+          const isHtmlModule = builders.has(node.type);
           body += `${indent}var n${level} = document.createElementNS('${node.xmlns}', \`${node.type}\`);\n`;
           if (child.node.key) {
-            body += `${indent}state.${node.key} = (n${level}.state) ? n${level}.state : n${level};\n`;
+            if (child.node.key !== '=') {
+              body += `${indent}state.${node.key} = ${(isHtmlModule ? `n${level}.state` : `n${level}`)};\n`;
+            }
+            else {
+              const keys = builderKeys.get(node.type);
+              keys.forEach(key => {
+                body += `${indent}if (state.${key}) n${level}.state.${key} = state.${key};\n`;
+              });
+            }
           }
 
-          const isHtmlModule = builders.has(node.type);
           node.attributes.forEach(e => {
             if (isHtmlModule) {
               const regex = /^\{(?<code>[^}]+)\}$/;
@@ -855,6 +860,8 @@ mdlr('[mdlr]html-loader', m => {
 
     const tempState = stateBuilder ? new stateBuilder : {};
     const stateKeys = [...Object.getOwnPropertyNames(stateBuilder.prototype), ...Object.getOwnPropertyNames(tempState)].filter(a => a !== 'constructor');
+
+    builderKeys.set(name, stateKeys);
 
     const code = compile(options.tree, {state: tempState, keys: new Set(stateKeys)});
     console.log(code);
@@ -1043,6 +1050,10 @@ mdlr('[mdlr]html-loader', m => {
     scope.css = installStyle.bind(options, name);
     scope.redraw = customElement => customElement.$update({});
     scope.render = customElement => customElement.$renew();
+    scope.redirect = path => {
+      const {hash, href} = window.location;
+      window.location.href = href.replace(hash, path);
+    }
 
     const builder = m.$('modules').get(info.n)(scope);
     builders.set(name, builder);
@@ -1059,7 +1070,7 @@ mdlr('[html]realworld-main-articles', m => {
   {#each article in articles}
     <div class="article-preview">
 
-    <realworld-article-meta article={article} api={api} user={user} options={options} />
+    <realworld-article-meta{=} article={article} />
     <a href="#/article?slug={article.slug}" class="preview-link">
       <h1>{article.title}</h1>
       <p>{article.description}</p>
@@ -1181,6 +1192,75 @@ mdlr('[html]realworld-article-comments', m => {
   }
 
 })
+mdlr('[html]realworld-article-meta', m => {
+
+  m.html`
+  <div class="article-meta">
+    <a href="#/profile?username={article.author.username}"><img src="{article.author.image}" /></a>
+    <div class="info">
+      <a href="#/profile?username={article.author.username}" class="author">{article.author.username}</a>
+      <span class="date">{formatDate()}</span>
+    </div>
+    {#if !details}
+    <button class="btn {favoriteClass} btn-sm pull-xs-right" on={click:favoriteClick}>
+      <i class="ion-heart" />{article.favoritesCount}
+    </button>
+    {:else}
+    <button class="btn btn-sm {followClass}" on={click:followClick}>
+      <i class="ion-plus-round" />{following} {article.author.username}
+    </button>
+    <button class="btn btn-sm {favoriteClass}" on={click:favoriteClick}>
+      <i class="ion-heart" />{favorited} Article <span class="counter">({article.favoritesCount})</span>
+    </button>
+    {/if}
+  </div>`;
+
+  return class {
+    api = null;
+    user = null;
+    options = null;
+
+    article = null;
+    details = false;
+
+    get followClass() {
+      return this.article?.author?.following ? 'btn-secondary' : 'btn-outline-secondary';
+    }
+
+    get following() {
+      return !this.article?.author?.following ? 'Follow' : 'Unfollow';
+    }
+
+    get favoriteClass() {
+      return this.article?.favorited ? 'btn-primary' : 'btn-outline-primary';
+    }
+
+    get favorited() {
+      return !this.article?.favorited ? 'Favorite' : 'Unfavorite';
+    }
+
+    formatDate() {
+      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+
+      return new Intl.DateTimeFormat('en-US', options).format(new Date(this.article?.updatedAt || '1970-01-01'));
+    }
+
+    async favoriteClick(e) {
+      this.options.slug = this.article?.slug;
+      const result = await this.api.favoriteArticle(this.user, this.options, !this.article?.favorited);
+      delete result.favoritedBy;
+      Object.assign(this.article, result);
+
+      // todo: how to redraw this properly?
+      m.redirect(`#/article?slug=${this.article.slug}&t=${Date.now()}`);
+    }
+
+    followClick(e) {
+      console.log('followClick', this.article?.author?.following);
+    }
+  }
+
+})
 mdlr('[unit]html-tokenizer', m => {
 
   const attributesRegEx = /(?<key>[a-zA-Z0-9\-]+)=(?:"(?<value1>(?:\\"|[^"\r\n])*)"|(?<value2>(?:\\"|[^\x20>\r\n])*))/g;
@@ -1274,76 +1354,6 @@ mdlr('[unit]object-tree', m => {
   }
 
   return { ObjectTree };
-})
-mdlr('[html]realworld-article-meta', m => {
-
-  m.html`
-  <div class="article-meta">
-    <a href="#/profile?username={article.author.username}"><img src="{article.author.image}" /></a>
-    <div class="info">
-      <a href="#/profile?username={article.author.username}" class="author">{article.author.username}</a>
-      <span class="date">{formatDate()}</span>
-    </div>
-    {#if !details}
-    <button class="btn {favoriteClass} btn-sm pull-xs-right" on={click:favoriteClick}>
-      <i class="ion-heart" />{article.favoritesCount}
-    </button>
-    {:else}
-    <button class="btn btn-sm {followClass}" on={click:followClick}>
-      <i class="ion-plus-round" />{following} {article.author.username}
-    </button>
-    <button class="btn btn-sm {favoriteClass}" on={click:favoriteClick}>
-      <i class="ion-heart" />{favorited} Article <span class="counter">({article.favoritesCount})</span>
-    </button>
-    {/if}
-  </div>`;
-
-  return class {
-    api = null;
-    user = null;
-    options = null;
-
-    article = null;
-    details = false;
-
-    get followClass() {
-      return this.article?.author?.following ? 'btn-secondary' : 'btn-outline-secondary';
-    }
-
-    get following() {
-      return !this.article?.author?.following ? 'Follow' : 'Unfollow';
-    }
-
-    get favoriteClass() {
-      return this.article?.favorited ? 'btn-primary' : 'btn-outline-primary';
-    }
-
-    get favorited() {
-      return !this.article?.favorited ? 'Favorite' : 'Unfavorite';
-    }
-
-    formatDate() {
-      const options = { month: 'long', day: 'numeric', year: 'numeric' };
-
-      return new Intl.DateTimeFormat('en-US', options).format(new Date(this.article?.updatedAt || '1970-01-01'));
-    }
-
-    async favoriteClick(e) {
-      this.options.slug = this.article?.slug;
-      const result = await this.api.favoriteArticle(this.user, this.options, !this.article?.favorited);
-      delete result.favoritedBy;
-      Object.assign(this.article, result);
-
-      // todo: how to redraw this
-      const {hash, href} = window.location;
-      window.location.href = href.replace(hash, `#/article?slug=${this.article.slug}&t=${Date.now()}`);
-    }
-
-    followClick(e) {
-      console.log('followClick', this.article?.author?.following);
-    }
-  }
-
 })
 mdlr('[mdlr]html-loader');
 mdlr('[html]realworld-app'); document.body.innerHTML = '<realworld-app></realworld-app>';</script></body></html>

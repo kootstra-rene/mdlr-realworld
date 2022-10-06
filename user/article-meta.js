@@ -57,9 +57,8 @@ mdlr('[html]realworld-article-meta', m => {
       delete result.favoritedBy;
       Object.assign(this.article, result);
 
-      // todo: how to redraw this
-      const {hash, href} = window.location;
-      window.location.href = href.replace(hash, `#/article?slug=${this.article.slug}&t=${Date.now()}`);
+      // todo: how to redraw this properly?
+      m.redirect(`#/article?slug=${this.article.slug}&t=${Date.now()}`);
     }
 
     followClick(e) {

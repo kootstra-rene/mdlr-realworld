@@ -6,7 +6,7 @@ mdlr('[html]realworld-main-articles', m => {
   {#each article in articles}
     <div class="article-preview">
 
-    <realworld-article-meta article={article} api={api} user={user} options={options} />
+    <realworld-article-meta{=} article={article} />
     <a href="#/article?slug={article.slug}" class="preview-link">
       <h1>{article.title}</h1>
       <p>{article.description}</p>
