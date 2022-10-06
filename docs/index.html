@@ -861,7 +861,7 @@ mdlr('[mdlr]html-loader', m => {
     const tempState = stateBuilder ? new stateBuilder : {};
     const stateKeys = [...Object.getOwnPropertyNames(stateBuilder.prototype), ...Object.getOwnPropertyNames(tempState)].filter(a => a !== 'constructor');
 
-    builderKeys.set(name, stateKeys);
+    builderKeys.set(name, [...Object.getOwnPropertyNames(tempState)]);
 
     const code = compile(options.tree, {state: tempState, keys: new Set(stateKeys)});
     console.log(code);
