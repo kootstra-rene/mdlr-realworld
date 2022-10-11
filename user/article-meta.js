@@ -2,22 +2,26 @@ mdlr('[html]realworld-article-meta', m => {
 
   m.html`
   <div class="article-meta">
-    <a href="#/profile?username={article.author.username}"><img src="{article.author.image}" /></a>
-    <div class="info">
-      <a href="#/profile?username={article.author.username}" class="author">{article.author.username}</a>
-      <span class="date">{formatDate()}</span>
-    </div>
-    {#if !details}
-    <button class="btn {favoriteClass} btn-sm pull-xs-right" on={click:favoriteClick}>
-      <i class="ion-heart" />{article.favoritesCount}
-    </button>
+    {#if article}
+      <a href="#/profile?username={article.author.username}"><img src="{article.author.image}" /></a>
+      <div class="info">
+        <a href="#/profile?username={article.author.username}" class="author">{article.author.username}</a>
+        <span class="date">{formatDate()}</span>
+      </div>
+      {#if !details}
+      <button class="btn {favoriteClass()} btn-sm pull-xs-right" on={click:favoriteClick}>
+        <i class="ion-heart" />{article.favoritesCount}
+      </button>
+      {:else}
+      <button class="btn btn-sm {followClass()}" on={click:followClick}>
+        <i class="ion-plus-round" />{following()} {article.author.username}
+      </button>
+      <button class="btn btn-sm {favoriteClass()}" on={click:favoriteClick}>
+        <i class="ion-heart" />{favorited()} Article <span class="counter">({article.favoritesCount})</span>
+      </button>
+      {/if}
     {:else}
-    <button class="btn btn-sm {followClass}" on={click:followClick}>
-      <i class="ion-plus-round" />{following} {article.author.username}
-    </button>
-    <button class="btn btn-sm {favoriteClass}" on={click:favoriteClick}>
-      <i class="ion-heart" />{favorited} Article <span class="counter">({article.favoritesCount})</span>
-    </button>
+      <div>...</div>
     {/if}
   </div>`;
 
@@ -29,19 +33,19 @@ mdlr('[html]realworld-article-meta', m => {
     article = null;
     details = false;
 
-    get followClass() {
+    followClass() {
       return this.article?.author?.following ? 'btn-secondary' : 'btn-outline-secondary';
     }
 
-    get following() {
+    following() {
       return !this.article?.author?.following ? 'Follow' : 'Unfollow';
     }
 
-    get favoriteClass() {
+    favoriteClass() {
       return this.article?.favorited ? 'btn-primary' : 'btn-outline-primary';
     }
 
-    get favorited() {
+    favorited() {
       return !this.article?.favorited ? 'Favorite' : 'Unfavorite';
     }
 

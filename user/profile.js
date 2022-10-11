@@ -9,11 +9,11 @@ mdlr('[html]realworld-profile', m => {
         <div class="row">
           {#if profile}
           <div class="col-xs-12 col-md-10 offset-md-1">
-            <img src="{ profile.image }" class="user-img" />
-            <h4>{ profile.username }</h4>
-            <p>{ profile.bio || ''}</p>
+            <img src="{profile.image}" class="user-img" />
+            <h4>{profile.username}</h4>
+            <p>{profile.bio || ''}</p>
             <button class="btn btn-sm btn-outline-secondary action-btn">
-              <i class="ion-plus-round"></i>Follow { profile.username }
+              <i class="ion-plus-round" />Follow {profile.username}
             </button>
           </div>
           {/if}

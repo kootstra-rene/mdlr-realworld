@@ -27,16 +27,16 @@ mdlr('[html]realworld-login', m => {
           <form method="dialog">
             {#if mode === 'up'}
             <fieldset class="form-group">
-              <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name">
+              <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name" />
             </fieldset>
             {/if}
 
             <fieldset class="form-group">
-              <input{email} class="form-control form-control-lg" type="text" placeholder="Email">
+              <input{email} class="form-control form-control-lg" type="text" placeholder="Email" />
             </fieldset>
 
             <fieldset class="form-group">
-              <input{password} class="form-control form-control-lg" type="password" placeholder="Password">
+              <input{password} class="form-control form-control-lg" type="password" placeholder="Password" />
             </fieldset>
 
             <button class="btn btn-lg btn-primary pull-xs-right" on={click}>

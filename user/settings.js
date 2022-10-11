@@ -11,19 +11,19 @@ mdlr('[html]realworld-settings', m => {
           <form method="dialog">
             <fieldset>
               <fieldset class="form-group">
-                <input{image} class="form-control" type="text" placeholder="URL of profile picture" value={user.image}>
+                <input{image} class="form-control" type="text" placeholder="URL of profile picture" value={user.image} />
               </fieldset>
               <fieldset class="form-group">
-                <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name" value={user.username}>
+                <input{username} class="form-control form-control-lg" type="text" placeholder="Your Name" value={user.username} />
               </fieldset>
               <fieldset class="form-group">
                 <textarea{bio} class="form-control form-control-lg" rows="8" placeholder="Short bio about you">{user.bio || ''}</textarea>
               </fieldset>
               <fieldset class="form-group">
-                <input{email} class="form-control form-control-lg" type="text" placeholder="Email" value={user.email}>
+                <input{email} class="form-control form-control-lg" type="text" placeholder="Email" value={user.email} />
               </fieldset>
               <fieldset class="form-group">
-                <input{password} class="form-control form-control-lg" type="password" placeholder="Password">
+                <input{password} class="form-control form-control-lg" type="password" placeholder="Password" />
               </fieldset>
               <button class="btn btn-lg btn-primary pull-xs-right" on={click:update}>
                 Update Settings
@@ -31,7 +31,7 @@ mdlr('[html]realworld-settings', m => {
             </fieldset>
           </form>
           {#if !!user}
-          <hr>
+          <hr />
           <button class="btn btn-outline-danger" on={click:logout}>
             Or click here to logout.
           </button>

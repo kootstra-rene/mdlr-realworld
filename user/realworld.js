@@ -16,9 +16,9 @@ mdlr('[html]realworld-app', m => {
   {#if hash === '#/'}
     <realworld-main{=} />
   {:elseif hash === '#/login'}
-    <realworld-login{=} mode="{'in'}" />
+    <realworld-login{=} mode="in" />
   {:elseif hash === '#/register'}
-    <realworld-login{=} mode="{'up'}"/>
+    <realworld-login{=} mode="up"/>
   {:elseif hash === '#/settings'}
     <realworld-settings{=} />
   {:elseif hash === '#/editor'}

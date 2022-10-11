@@ -31,7 +31,7 @@ mdlr('[html]realworld-main-articles', m => {
     user = null;
     options = null;
 
-    articles = null;
+    articles = [];
 
     async connected() {
       this.articles = await this.api.getArticles(this.user, this.options);
