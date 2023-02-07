@@ -6,7 +6,7 @@ mdlr('[html]realworld-main-articles', m => {
   {#each article in articles}
     <div class="article-preview">
 
-    <realworld-article-meta{=} article={article} />
+    <realworld-article-meta{=} article={} />
     <a href="#/article?slug={article.slug}" class="preview-link">
       <h1>{article.title}</h1>
       <p>{article.description}</p>
@@ -31,7 +31,7 @@ mdlr('[html]realworld-main-articles', m => {
     user = null;
     options = null;
 
-    articles = [];
+    articles = null;
 
     async connected() {
       this.articles = await this.api.getArticles(this.user, this.options);
