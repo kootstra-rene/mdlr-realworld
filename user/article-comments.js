@@ -40,12 +40,12 @@ mdlr('[html]realworld-article-comments', m => {
   return class {
     api = null;
     user = null;
-    options = null;
+    search = null;
 
     comments = null;
 
     async connected() {
-      this.comments = await this.api.getArticleComments(this.user, this.options);
+      this.comments = await this.api.getArticleComments(this.user, this.search);
 
       m.redraw(this);
     }

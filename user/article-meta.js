@@ -28,7 +28,7 @@ mdlr('[html]realworld-article-meta', m => {
   return class {
     api = null;
     user = null;
-    options = null;
+    search = null;
 
     article = null;
     details = false;
@@ -56,8 +56,8 @@ mdlr('[html]realworld-article-meta', m => {
     }
 
     async favoriteClick(e) {
-      this.options.slug = this.article?.slug;
-      const result = await this.api.favoriteArticle(this.user, this.options, !this.article?.favorited);
+      this.search.slug = this.article?.slug;
+      const result = await this.api.favoriteArticle(this.user, this.search, !this.article?.favorited);
       delete result.favoritedBy;
       Object.assign(this.article, result);
 

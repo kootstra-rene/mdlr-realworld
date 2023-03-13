@@ -25,8 +25,8 @@ mdlr('[html]realworld-main', m => {
               <li class="nav-item"><a class="nav-link {userFeed()}" href="#/?username={user.username}">Your Feed</a></li>
               {/if}
               <li class="nav-item"><a class="nav-link {globalFeed()}" href="#/">Global Feed</a></li>
-              {#if !!options.tag}
-              <li class="nav-item"><a class="nav-link {tagFeed()}" href="#/?tag={options.tag}"># {options.tag}</a></li>
+              {#if !!search.tag}
+              <li class="nav-item"><a class="nav-link {tagFeed()}" href="#/?tag={search.tag}"># {search.tag}</a></li>
               {/if}
             </ul>
           </div>
@@ -46,19 +46,19 @@ mdlr('[html]realworld-main', m => {
   return class {
     api = null;
     user = null;
-    options = {};
+    search = {};
 
     // todo: there should be an easier method to this
     userFeed() {
-      return this.options.username ? 'active' : 'disabled';
+      return this.search.username ? 'active' : 'disabled';
     }
 
     globalFeed() {
-      return !this.options.username && !this.options.tag ? 'active' : 'disabled';
+      return !this.search.username && !this.search.tag ? 'active' : 'disabled';
     }
 
     tagFeed() {
-      return this.options.tag ? 'active' : 'disabled';
+      return this.search.tag ? 'active' : 'disabled';
     }
   }
 })

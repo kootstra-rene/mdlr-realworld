@@ -29,12 +29,12 @@ mdlr('[html]realworld-main-articles', m => {
   return class {
     api = null;
     user = null;
-    options = null;
+    search = null;
 
     articles = null;
 
     async connected() {
-      this.articles = await this.api.getArticles(this.user, this.options);
+      this.articles = await this.api.getArticles(this.user, this.search);
 
       m.redraw(this);
     }

@@ -51,13 +51,13 @@ mdlr('[html]realworld-article', m => {
   return class {
     api = null;
     user = null;
-    options = null;
+    search = null;
 
     article = null;
     details = true;
 
     async connected() {
-      this.article = await this.api.getArticle(this.user, this.options);
+      this.article = await this.api.getArticle(this.user, this.search);
 
       m.redraw(this);
     }

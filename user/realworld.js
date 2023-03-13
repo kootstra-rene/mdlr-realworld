@@ -1,5 +1,7 @@
 mdlr('[html]realworld-app', m => {
 
+  const { Router } = m.require('core:router');
+
   m.require('[html]realworld-header');
   m.require('[html]realworld-main');
   m.require('[html]realworld-login');
@@ -13,19 +15,19 @@ mdlr('[html]realworld-app', m => {
 
   m.html`
   <realworld-header user={user} />
-  {#if hash === '#/'}
+  {#if path === '/'}
     <realworld-main{=} />
-  {:elseif hash === '#/login'}
+  {:elseif path === '/login'}
     <realworld-login{=} mode="in" />
-  {:elseif hash === '#/register'}
+  {:elseif path === '/register'}
     <realworld-login{=} mode="up"/>
-  {:elseif hash === '#/settings'}
+  {:elseif path === '/settings'}
     <realworld-settings{=} />
-  {:elseif hash === '#/editor'}
+  {:elseif path === '/editor'}
     <realworld-article-create{=} />
-  {:elseif hash === '#/article'}
+  {:elseif path === '/article'}
     <realworld-article{=} />
-  {:elseif hash === '#/profile'}
+  {:elseif path === '/profile'}
     <realworld-profile{=} />
   {/if}
   <realworld-footer />`;
@@ -44,40 +46,33 @@ mdlr('[html]realworld-app', m => {
   <link prefetch rel="stylesheet" href="//demo.productionready.io/main.css">`;
 
   return class {
+    #router = new Router();
     api = api;
-    hash = '#/';
+    path = '/';
     user = null;
-    options = {};
+    search = {};
 
     constructor() {
-      this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
+      const update = this.#update.bind(this);
 
-      this.router(window.location.href);
+      this.#router.get('/*', update)
+      this.#router.get('/', update)
     }
 
     connected() {
+      this.#router.connect(window.location.href)
       document.body.style.overflow = 'auto';
-
-      window.addEventListener('hashchange', e => {
-        // todo: put user info in seperate module
-        this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
-
-        this.router(e.newURL);
-        m.redraw(this);
-      });
     }
 
-    router(newURL) {
-      const url = new URL(newURL);
-      const [hash, search] = url.hash.split('?');
+    disconnected() {
+      this.#router.disconnect();
+    }
 
-      const options = new URLSearchParams(search);
-      this.options = [...options].reduce((a, [key, value]) => {
-        a[key] = value;
-        return a;
-      }, {});
-
-      this.hash = hash || '#/';
+    #update({ path, search }) {
+      this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
+      this.search = search;
+      this.path = path;
+      m.redraw(this);
     }
   }
 

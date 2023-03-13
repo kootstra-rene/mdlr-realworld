@@ -43,11 +43,11 @@ mdlr('[html]realworld-profile', m => {
   return class {
     api = null;
     user = null;
-    options = null;
+    search = null;
     profile = null;
 
     async connected() {
-      this.profile = await this.api.getProfile(this.user, this.options);
+      this.profile = await this.api.getProfile(this.user, this.search);
 
       m.redraw(this);
     }
