@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><style>:where(body){all: unset;margin:0;overflow:hidden;}</style></head><body><script type="text/javascript">'use strict';
+'use strict';
 globalThis.mdlr = (() => {
 const m = {
 names: /^(?:\[(?<t>[a-z]+)\])?(?<n>[-:a-z0-9_]+)$/,
@@ -28,16 +28,12 @@ this.$ = k => m[k];
 }
 }
 require(name, context) {
-if (this.context[name]) {
-return this.context[name];
-}
-const info = m.info(name);
-return m.load(info, context);
+return this.context[name] ?? m.load(m.info(name), context);
 }
 }
 return (name, context) => {
 const info = m.info(name);
-if (context && context.constructor === Function) {
+if (context?.constructor === Function) {
 m.modules.set(info.n, context);
 }
 else {
@@ -46,6 +42,7 @@ return m.load(info, context);
 }
 })()
 mdlr('[html]realworld-app', m => {
+const { Router } = m.require('core:router');
 m.require('[html]realworld-header');
 m.require('[html]realworld-main');
 m.require('[html]realworld-login');
@@ -57,19 +54,19 @@ m.require('[html]realworld-footer');
 const api = m.require('api:realworld');
 m.html`
 <realworld-header user={user} />
-{#if hash === '#/'}
+{#if path === '/'}
 <realworld-main{=} />
-{:elseif hash === '#/login'}
+{:elseif path === '/login'}
 <realworld-login{=} mode="in" />
-{:elseif hash === '#/register'}
+{:elseif path === '/register'}
 <realworld-login{=} mode="up"/>
-{:elseif hash === '#/settings'}
+{:elseif path === '/settings'}
 <realworld-settings{=} />
-{:elseif hash === '#/editor'}
+{:elseif path === '/editor'}
 <realworld-article-create{=} />
-{:elseif hash === '#/article'}
+{:elseif path === '/article'}
 <realworld-article{=} />
-{:elseif hash === '#/profile'}
+{:elseif path === '/profile'}
 <realworld-profile{=} />
 {/if}
 <realworld-footer />`;
@@ -85,34 +82,87 @@ document.head.innerHTML += `
 <link prefetch href="//fonts.googleapis.com/css?family=Titillium+Web:700|Source+Serif+Pro:400,700|Merriweather+Sans:400,700|Source+Sans+Pro:400,300,600,700,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
 <link prefetch rel="stylesheet" href="//demo.productionready.io/main.css">`;
 return class {
+#router = new Router();
 api = api;
-hash = '#/';
+path = '/';
 user = null;
-options = {};
+search = {};
 constructor() {
-this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
-this.router(window.location.href);
+const update = this.#update.bind(this);
+this.#router.get('/*', update)
+this.#router.get('/', update)
 }
 connected() {
+this.#router.connect(window.location.href)
 document.body.style.overflow = 'auto';
-// primitive router
-window.addEventListener('hashchange', e => {
-// todo: put user info in seperate module
+}
+disconnected() {
+this.#router.disconnect();
+}
+#update({ path, search }) {
 this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
-this.router(e.newURL);
+this.search = search;
+this.path = path;
 m.redraw(this);
-});
 }
-router(newURL) {
-const url = new URL(newURL);
-const [hash, search] = url.hash.split('?');
-const options = new URLSearchParams(search);
-this.options = [...options].reduce((a, [key, value]) => {
-a[key] = value;
-return a;
-}, {});
-this.hash = hash || '#/';
 }
+})
+mdlr('[unit]core:router', m => {
+const { decode } = m.require('router-url');
+const endpoints = { get: [], put: [], head: [], post: [], delete: [], options: [] };
+function register(method, route, handler) {
+const server = decode(`https://dontcare${route}`).server;
+endpoints[method] = endpoints[method].filter(a => a.path !== route);
+endpoints[method].push(Object.assign({}, server, { handler }));
+}
+function shim(route, call) {
+return {
+get path() {
+return call.path;
+},
+get params() {
+return Object.seal(call.path.match(route.regex)?.groups ?? {});
+},
+get search() {
+return Object.seal(Object.fromEntries(call.search));
+}
+}
+}
+class Router {
+#mode = 'client';
+#endpoints = { get: [] };
+#handler = this.handler.bind(this);
+constructor(mode = 'client') {
+this.#mode = mode;
+this.get = this.register.bind(this, 'get');
+}
+register(method, route, handler) {
+const descriptor = decode(`https://dontcare${route}`).server;
+this.#endpoints[method] = this.#endpoints[method].filter(a => a.path !== route);
+this.#endpoints[method].push(Object.assign({}, descriptor, { handler }));
+}
+filter(method, descriptor) {
+const route = descriptor[this.#mode] ?? { path: '/' };
+return this.#endpoints[method]
+.filter(a => a.regex.test(route.path))
+.map(a => () => a.handler.call(a, shim(a, route)))
+}
+handler(e) {
+const list = this.filter('get', decode(e.newURL));
+if (list.length === 1) {
+return list[0]();
+}
+}
+connect(url) {
+window.addEventListener('hashchange', this.#handler);
+if (url) this.#handler({ newURL: url });
+}
+disconnect() {
+window.removeEventListener('hashchange', this.#handler);
+}
+}
+return {
+Router
 }
 })
 mdlr('[html]realworld-header', m => {
@@ -159,8 +209,8 @@ m.html`
 <li class="nav-item"><a class="nav-link {userFeed()}" href="#/?username={user.username}">Your Feed</a></li>
 {/if}
 <li class="nav-item"><a class="nav-link {globalFeed()}" href="#/">Global Feed</a></li>
-{#if !!options.tag}
-<li class="nav-item"><a class="nav-link {tagFeed()}" href="#/?tag={options.tag}"># {options.tag}</a></li>
+{#if !!search.tag}
+<li class="nav-item"><a class="nav-link {tagFeed()}" href="#/?tag={search.tag}"># {search.tag}</a></li>
 {/if}
 </ul>
 </div>
@@ -175,16 +225,16 @@ m.html`
 return class {
 api = null;
 user = null;
-options = {};
+search = {};
 // todo: there should be an easier method to this
 userFeed() {
-return this.options.username ? 'active' : 'disabled';
+return this.search.username ? 'active' : 'disabled';
 }
 globalFeed() {
-return !this.options.username && !this.options.tag ? 'active' : 'disabled';
+return !this.search.username && !this.search.tag ? 'active' : 'disabled';
 }
 tagFeed() {
-return this.options.tag ? 'active' : 'disabled';
+return this.search.tag ? 'active' : 'disabled';
 }
 }
 })
@@ -383,11 +433,11 @@ margin-left: 0.2em;
 return class {
 api = null;
 user = null;
-options = null;
+search = null;
 article = null;
 details = true;
 async connected() {
-this.article = await this.api.getArticle(this.user, this.options);
+this.article = await this.api.getArticle(this.user, this.search);
 m.redraw(this);
 }
 }
@@ -463,10 +513,10 @@ m.html`
 return class {
 api = null;
 user = null;
-options = null;
+search = null;
 profile = null;
 async connected() {
-this.profile = await this.api.getProfile(this.user, this.options);
+this.profile = await this.api.getProfile(this.user, this.search);
 m.redraw(this);
 }
 }
@@ -566,6 +616,7 @@ const $cache = new Map;
 const { tokenizer } = _.require('html-tokenizer');
 const eachRegEx = /^(?<item>[a-zA-Z0-9-]+(,\s*[a-zA-Z0-9-]+)?) in (?<member>[^}]+)$/;
 const attrRegEx = /^(?<n>[a-zA-Z0-9-]*)(?<d>{(?<e>[^}:]*?)(:(?<h>[^}]*))?})?$/;
+const openRegEx = /^(?<n>[a-zA-Z0-9-]*)(?<d>{(?<e>[^}=]*?)(=(?<h>[^}]*))?})?$/;
 const copyRegEx = /^\{(?<code>[^}]+)\}|(?<text>.*)$/;
 function defineElement(name, e, $) {
 customElements.define(name, class extends HTMLElement {
@@ -598,19 +649,19 @@ for (let { id, type, data } of tokenizer(markup)) {
 let code;
 switch (type) {
 case 'open':
-const { n, e, h, d } = attrRegEx.exec(id).groups;
+const { n, e, h, d } = openRegEx.exec(id).groups;
 const isHtmlModule = cache.has(n);
 const xmlns = (data.find(a => a.key === 'xmlns') ?? {}).value;
 create += `$e[++$i] = $d.createElementNS(${xmlns ? `'${xmlns}'` : '($t[0].namespaceURI ?? \'http://www.w3.org/1999/xhtml\')'}, '${n}');\n`;
 if (d) {
 const m = (h || e) || n;
-if (m[0] !== '=') {
-create += `$.${m} = $e[$i].$ ?? $e[$i];\n`;
+if (e) {
+create += `$.${e} = $e[$i].$ ?? $e[$i];\n`;
 }
-else {
-const v = m.slice(1) || '$';
+if (h !== undefined && h !== null) {
+const v = h || '$';
 cache.get(n).keys.forEach(k => {
-add(`if(${v}.${k}) $e[$i].$.${k} = ${v}.${k};\n`);
+add(`if(${v}.${k}) ${e || '$e[$i].$'}.${k} = ${v}.${k};\n`);
 });
 }
 }
@@ -751,6 +802,40 @@ cache.set(name, { stateClass, keys: [...names(state)] });
 globalThis.cache = cache;
 })
 })
+mdlr('[unit]router-url', m => {
+function matcher(path) {
+const parts = path.split('/').map(a => a[0] !== ':' ? (a === '*' ? '.+' : a) : `(?<${a.slice(1)}>[^/]+)`);
+return new RegExp(`^${parts.join('/')}$`);
+}
+function block(url) {
+return !url ? null : {
+path: url.pathname,
+hash: url.hash.slice(1),
+regex: matcher(url.pathname),
+search: url.searchParams
+}
+}
+function decode(url) {
+const server = new URL(decodeURI(url));
+let [, hash, path] = server.hash.split('#');
+let client;
+if (hash && hash[0] === '/') {
+client = new URL(hash ?? '', server.origin);
+hash = '';
+}
+else {
+client = new URL(path ?? '', server.origin);
+}
+client.hash = hash ?? '';
+server.hash = '';
+return {
+origin: server.origin,
+server: block(server),
+client: hash !== undefined ? block(client) : null
+};
+}
+return { decode };
+})
 mdlr('[html]realworld-main-articles', m => {
 m.require('[html]realworld-article-meta');
 m.html`
@@ -778,10 +863,10 @@ m.html`
 return class {
 api = null;
 user = null;
-options = null;
+search = null;
 articles = null;
 async connected() {
-this.articles = await this.api.getArticles(this.user, this.options);
+this.articles = await this.api.getArticles(this.user, this.search);
 m.redraw(this);
 }
 }
@@ -844,10 +929,10 @@ display: contents;
 return class {
 api = null;
 user = null;
-options = null;
+search = null;
 comments = null;
 async connected() {
-this.comments = await this.api.getArticleComments(this.user, this.options);
+this.comments = await this.api.getArticleComments(this.user, this.search);
 m.redraw(this);
 }
 formatDate(comment) {
@@ -884,7 +969,7 @@ m.html`
 return class {
 api = null;
 user = null;
-options = null;
+search = null;
 article = null;
 details = false;
 followClass() {
@@ -904,8 +989,8 @@ const options = { month: 'long', day: 'numeric', year: 'numeric' };
 return new Intl.DateTimeFormat('en-US', options).format(new Date(this.article?.updatedAt || '1970-01-01'));
 }
 async favoriteClick(e) {
-this.options.slug = this.article?.slug;
-const result = await this.api.favoriteArticle(this.user, this.options, !this.article?.favorited);
+this.search.slug = this.article?.slug;
+const result = await this.api.favoriteArticle(this.user, this.search, !this.article?.favorited);
 delete result.favoritedBy;
 Object.assign(this.article, result);
 // todo: how to redraw this properly?
@@ -951,4 +1036,4 @@ yield $(hint, 'hint', body);
 return { tokenizer };
 })
 mdlr('[mdlr]html-loader');
-mdlr('[html]realworld-app'); document.body.innerHTML = '<realworld-app></realworld-app>';</script></body></html>
+mdlr('[html]realworld-app');
