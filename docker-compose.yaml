@@ -7,3 +7,4 @@ services:
     ports:
       - "8443:443"
       - "9229:9229"
+    init: true
