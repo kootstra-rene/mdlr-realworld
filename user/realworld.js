@@ -68,7 +68,7 @@ mdlr('[html]realworld-app', m => {
       this.#router.disconnect();
     }
 
-    #update({ path, search }) {
+    #update({ path, search = {} }) {
       this.user = JSON.parse(localStorage.getItem('user') || '{}').user;
       this.search = search;
       this.path = path;

@@ -47,6 +47,10 @@ mdlr('[html]realworld-settings', m => {
     user = null;
 
     bio = null;
+    image = null;
+    email = null;
+    password = null;
+    username = null;
 
     logout() {
       localStorage.setItem('user', '{}');

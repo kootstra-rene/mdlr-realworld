@@ -59,7 +59,10 @@ mdlr('[html]realworld-login', m => {
     api = null;
     mode = '';
     error = null;
+
     username = null;
+    email = null;
+    password = null;
 
     click(e) {
       if (this.mode === 'in') this.login();
